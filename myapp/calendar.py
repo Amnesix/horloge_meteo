@@ -174,9 +174,9 @@ class Calendar:
         self.set_pen(self.fg)
         s = f"{MOIS[self.month - 1]} {self.year}"
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 24)
-        x, y = int(120 - self.vector.measure_text(s)[2] // 2), 274
+        x, y = int(120 - self.vector.measure_text(s)[2] // 2), 280
         self.vector.text(s, x, y + self.yoffset)
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 16)
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 18)
         self.set_pen(self.fg)
         if maj:
             self.init_calendar(time.time())
@@ -208,7 +208,7 @@ class Calendar:
             if change_font:
                 change_font = False
                 self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
-                                     18)
+                                     20)
             y += 25
         self.presto.partial_update(0, 240, 240, 240)
 

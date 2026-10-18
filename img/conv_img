@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+# Conversion image pour presto
+convert $1.png -resize 480x480 -sampling-factor 4:4:4 -interlace none -quality 70 $1.jpg

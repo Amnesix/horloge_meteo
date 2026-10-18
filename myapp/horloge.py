@@ -226,7 +226,7 @@ class Horloge:
             angle_hour += minute / 2
             angle_second = second * 6
 
-            self.display.set_pen(Color.DARKJAUNE)
+            self.display.set_pen(Color.ORANGECLAIR)
 
             # Dessin des aiguilles
             self.tr.rotate(angle_minute, (x, y))
@@ -252,19 +252,19 @@ class Horloge:
             jour = f"{JOURS[wd]}"
             dim = self.vector.measure_text(jour)
             self.vector.text(jour, 360 - int(dim[2] // 2), 40)
-            date = f"{day}"
-            dim = self.vector.measure_text(date)
-            self.vector.text(date, 360 - int(dim[2] // 2), 80)
             mois = f"{MOIS[month - 1]}"
             dim = self.vector.measure_text(mois)
-            self.vector.text(mois, 360 - int(dim[2] // 2), 120)
+            self.vector.text(mois, 360 - int(dim[2] // 2), 140)
+            self.vector.set_font("Roboto-Medium.af", 64)
+            date = f"{day}"
+            dim = self.vector.measure_text(date)
+            self.vector.text(date, 360 - int(dim[2] // 2), 100)
             # annee = f"{year}"
             # dim = self.vector.measure_text(annee)
             # self.vector.text(annee, 360 - int(dim[2] // 2), 160)
-            self.vector.set_font("Roboto-Medium.af", 64)
             heure = f"{hour}:{minute:02d}"
             dim = self.vector.measure_text(heure)
-            self.vector.text(heure, 360 - int(dim[2] // 2), 210)
+            self.vector.text(heure, 360 - int(dim[2] // 2), 220)
 
             gc.collect()
             self.total += 1

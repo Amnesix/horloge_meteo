@@ -312,6 +312,7 @@ class Color:
         cls.LIGHTGREEN = display.create_pen(0, 255, 0)
         cls.LIGHTBLUE = display.create_pen(0, 0, 255)
         cls.ORANGE = display.create_pen(127, 39, 5)
+        cls.ORANGECLAIR = display.create_pen(127, 69, 10)
         cls.CYAN = display.create_pen(0, 127, 127)
         cls.LIGHTYELLOW = display.create_pen(126, 130, 94)
         cls.LIGHTORANGE = display.create_pen(162, 71, 3)

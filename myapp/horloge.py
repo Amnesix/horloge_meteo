@@ -3,9 +3,6 @@ import sys
 import time
 
 import jpegdec
-from picovector import Polygon
-from pngdec import PNG
-
 from myapp.utils import (
     JOURS,
     MOIS,
@@ -17,6 +14,8 @@ from myapp.utils import (
     verifier_connexion,
 )
 from myapp.version import __title__, __version__
+from picovector import Polygon
+from pngdec import PNG
 
 v = sys.version
 __python__ = "µPython - " + v.split(";")[0]
@@ -150,29 +149,27 @@ class Horloge:
                 time.sleep_ms(10)
                 continue
             if (minute % 5) == 0 and second == 0 or self.first:
+                # Quadran SE
                 meteo = get_weather()
                 self.display.set_pen(Color.BLACK)
                 self.display.rectangle(240, 240, 240, 240)
                 self.display.set_pen(self.fg)
-                self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
-                                     24)
                 y = 280
-                # text = meteo["location"]["name"]
-                # log = self.vector.measure_text(text)
-                # self.vector.text(text, 360 - int(log[2] / 2), y)
-                text = f"Température : {meteo['current']['temp_c']}°C"
+                self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
+                                     64)
+                text = f"{meteo['current']['temp_c']}oC"
                 log = self.vector.measure_text(text)
-                self.vector.text(text, 360 - int(log[2] / 2), y + 15)
-                text = f"Vent : {meteo['current']['wind_kph']}km/h"
+                # le symbole ° est mal calculé pour la largeur !
+                text = text.replace('o', '°')
+                self.vector.text(text, 360 - int(log[2] / 2), y + 30)
+                self.vector.set_font("Roboto-Medium.af", 32)
+                text = f"{meteo['current']['wind_kph']}km/h {meteo['current']['wind_dir']}"
                 log = self.vector.measure_text(text)
-                self.vector.text(text, 360 - int(log[2] / 2), y + 40)
-                text = f"secteur {meteo['current']['wind_dir']}"
-                log = self.vector.measure_text(text)
-                self.vector.text(text, 360 - int(log[2] / 2), y + 65)
+                self.vector.text(text, 360 - int(log[2] / 2), y + 70)
                 try:
-                    icon = f"icons/{meteo['current']['condition']['code']}_day.png"
+                    icon = f"icons128/{meteo['current']['condition']['code']}_{'day' if meteo['current']['is_day'] == 1 else 'night'}.png"
                     self.png.open_file(icon)
-                    self.png.decode(290, 350, scale=2)
+                    self.png.decode(296, 350)
                 except OSError:
                     text = meteo['current']['condition']['text']
                     log = self.vector.measure_text(text)
@@ -206,9 +203,18 @@ class Horloge:
             if self.backlight != lst_bl:
                 self.presto.set_backlight(self.backlight)
                 lst_bl = self.backlight
+
+            # Traits de debug
+            # self.display.set_pen(Color.CYAN)
+            # self.display.line(0, 240, 480, 240)
+            # self.display.line(240, 0, 240, 480)
+            # self.display.line(360, 0, 360, 480)
+            # self.presto.update()
+
+            # Quadran NO & NE
             self.tr.reset()
             self.display.set_pen(Color.BLACK)
-            self.display.clear()
+            self.display.rectangle(0, 0, 480, 240)
             self.jpg.open_file("img/cadran_240.jpg")
             self.jpg.decode(0, 0, jpegdec.JPEG_SCALE_HALF, dither=True)
 
@@ -239,8 +245,9 @@ class Horloge:
             self.tr.reset()
             self.vector.draw(self.hub)
 
+            # Quadran NE
             self.display.set_pen(self.fg)
-            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 40)
+            self.vector.set_font("Roboto-Medium.af", 40)
             jour = f"{JOURS[wd]}"
             dim = self.vector.measure_text(jour)
             self.vector.text(jour, 360 - int(dim[2] // 2), 40)
@@ -253,10 +260,10 @@ class Horloge:
             annee = f"{year}"
             dim = self.vector.measure_text(annee)
             self.vector.text(annee, 360 - int(dim[2] // 2), 160)
-            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 64)
+            self.vector.set_font("Roboto-Medium.af", 64)
             heure = f"{hour}:{minute:02d}"
             dim = self.vector.measure_text(heure)
-            self.vector.text(heure, 360 - int(dim[2] // 2), 230)
+            self.vector.text(heure, 360 - int(dim[2] // 2), 220)
 
             gc.collect()
             self.total += 1

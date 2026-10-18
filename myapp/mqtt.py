@@ -3,10 +3,9 @@ import gc
 import time
 
 import machine
-from umqtt.simple import MQTTClient
-
 from myapp.secret import MQTT_PASSWD, MQTT_USER
 from myapp.utils import TZ, Color, Log, verifier_connexion
+from umqtt.simple import MQTTClient
 
 _SOUSCRIPTIONS = {
     # Températures
@@ -115,7 +114,6 @@ class MQTT:
                 # ATTENTION : Le loggin ralenti l'intialisation du presto…
                 s = f"Souscription : {(n + 1) * 100 / t:.0f}%"
                 self.loggin.log(s, nl=False)
-                print(k)
                 self.client.subscribe(k)
         except OSError as e:
             print(f">> Erreur de connexion : {e}")
@@ -142,10 +140,8 @@ class MQTT:
         self.connect()
 
     def send_msg(self, what, msg):
-        # print(f"Send {what}: {TOPIC_MSG[what]}:'{msg}'")
         try:
             if self.client is not None:
-                print(f"publish({TOPIC_MSG[what]}, {msg})")
                 self.client.publish(TOPIC_MSG[what], msg)
         except KeyError:
             print(f"Erreur de clé send_msg({what}, {msg})")

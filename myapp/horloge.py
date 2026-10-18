@@ -3,6 +3,9 @@ import sys
 import time
 
 import jpegdec
+from picovector import Polygon
+from pngdec import PNG
+
 from myapp.utils import (
     JOURS,
     MOIS,
@@ -14,8 +17,6 @@ from myapp.utils import (
     verifier_connexion,
 )
 from myapp.version import __title__, __version__
-from picovector import Polygon
-from pngdec import PNG
 
 v = sys.version
 __python__ = "µPython - " + v.split(";")[0]
@@ -257,13 +258,13 @@ class Horloge:
             mois = f"{MOIS[month - 1]}"
             dim = self.vector.measure_text(mois)
             self.vector.text(mois, 360 - int(dim[2] // 2), 120)
-            annee = f"{year}"
-            dim = self.vector.measure_text(annee)
-            self.vector.text(annee, 360 - int(dim[2] // 2), 160)
+            # annee = f"{year}"
+            # dim = self.vector.measure_text(annee)
+            # self.vector.text(annee, 360 - int(dim[2] // 2), 160)
             self.vector.set_font("Roboto-Medium.af", 64)
             heure = f"{hour}:{minute:02d}"
             dim = self.vector.measure_text(heure)
-            self.vector.text(heure, 360 - int(dim[2] // 2), 220)
+            self.vector.text(heure, 360 - int(dim[2] // 2), 210)
 
             gc.collect()
             self.total += 1

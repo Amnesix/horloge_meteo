@@ -1,19 +1,17 @@
 import gc
 import time
 
-from requests import get
-
 from myapp.secret import headers
 from myapp.utils import (
     CAPTEURS,
     TZ,
     Color,
-    Page,
     get_api,
     get_temperatures,
     get_touch,
     verifier_connexion,
 )
+from requests import get
 
 ASK_ALL_TEMP = True
 ASK_VIA_TEMPLATE = True
@@ -198,18 +196,7 @@ class Temperatures:
             if verifier_connexion(self.presto, self.loggin):
                 self.mqtt.reconnect()
             self.mqtt.check_msg()
-            if Page.get_page() != "temperatures":
-                return
             k = get_touch(self.touch)
-            if k == 'L':
-                Page.clear()
-                return
-            if k == 'R':
-                self.tri = (self.tri + 1) % 3
-            if k == 'U':
-                self.reverse = True
-            if k == 'D':
-                self.reverse = False
             if self.alerte.id_show:
                 self.alerte.show()
             s = time.time()
@@ -314,7 +301,6 @@ class Temperatures:
             self.display.set_pen(fg)
             self.vector.text(heure, (480 - lh[2]) // 2, 470)
             self.presto.update()
-            Page.set_redraw(False)
             gc.collect()
             # t_end = time.ticks_ms()
             # print(f"Boucle : {t_end - t_start}ms")

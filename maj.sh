@@ -1,1 +1,1 @@
-mpremote cp main.py : && mpremote cp -r myapp : && mpremote exec "import main"
+mpremote cp main.py : && mpremote cp -r horloge : && mpremote exec "import main"

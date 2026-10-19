@@ -3,9 +3,6 @@ import sys
 import time
 
 import jpegdec
-from picovector import Polygon
-from pngdec import PNG
-
 from myapp.utils import (
     JOURS,
     MOIS,
@@ -17,6 +14,8 @@ from myapp.utils import (
     verifier_connexion,
 )
 from myapp.version import __title__, __version__
+from picovector import Polygon
+from pngdec import PNG
 
 v = sys.version
 __python__ = "µPython - " + v.split(";")[0]
@@ -29,6 +28,7 @@ class Horloge:
     total = 1
     backlight = 1.
     force_backlight = None
+    hfs = cfs = mfs = False
 
     def __init__(
         self,
@@ -39,7 +39,6 @@ class Horloge:
         touch,
         mqtt,
         calendar,
-        alarmes,
         alerte,
         loggin,
     ):
@@ -50,7 +49,6 @@ class Horloge:
         self.touch = touch
         self.mqtt = mqtt
         self.calendar = calendar
-        self.alarmes = alarmes
         self.alerte = alerte
         self.loggin = loggin
         self.local = True
@@ -121,14 +119,18 @@ class Horloge:
 
     def gere_touch(self):
 
-        def wait_for_release():
-            while self.touch.state:
-                self.touch.poll()
-
         data = get_touch(self.touch)
         if data is None:
             return False
-        return False
+        if data == "NO":
+            self.hfs = True
+        elif data == "NE":
+            pass
+        elif data == "SO":
+            self.cfs = True
+        elif data == "SE":
+            self.mfs = True
+        return True
 
     def affiche(self):
         self.first = True

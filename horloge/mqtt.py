@@ -207,14 +207,13 @@ class MQTT:
 class MQTTLog:
     nb_msg = 0
 
-    def __init__(self, presto, display, vector, touch, mqtt, alerte, alarmes):
+    def __init__(self, presto, display, vector, touch, mqtt, alerte):
         self.presto = presto
         self.display = display
         self.vector = vector
         self.touch = touch
         self.mqtt = mqtt
         self.alerte = alerte
-        self.alarmes = alarmes
         self.loggin = Log(presto, display, vector, "Messages MQTT")
         self.start = time.time()
         self.mqtt.set_callback(self.cb)
@@ -238,8 +237,6 @@ class MQTTLog:
         # forcer le premier affichage
         self.loggin.new_message = True
         while True:
-            if self.alarmes.check_alarm():
-                self.alerte.alerte("C'est l'heure !")
             verifier_connexion(self.presto, self.loggin)
             try:
                 # Wait for MQTT messages (non-blocking check)

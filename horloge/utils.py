@@ -5,10 +5,9 @@ import time
 
 import ntptime
 import requests
+from myapp.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
 from picovector import Polygon
 from requests import get
-
-from myapp.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
 
 OZOIR = (48.763827, 2.671739)
 OZOIR_NAME = "ozoir-la-ferriere"
@@ -183,19 +182,14 @@ def get_touch(touch) -> "tuple[int, int] | str | None":
         while touch.state:
             touch.poll()
         dx, dy = xs - touch.x, ys - touch.y
-        if math.sqrt(dx * dx + dy * dy) > 100:
-            if abs(dx) < abs(dy):
-                if dy < 0:
-                    return 'D'
-                else:
-                    return 'U'
-            else:
-                if dx < 0:
-                    return 'R'
-                else:
-                    return 'L'
-        else:
-            return (xs, ys)
+        if math.sqrt(dx * dx + dy * dy) < 10:
+            if xs < 240:
+                if ys < 240:
+                    return "NO"
+                return "NE"
+            if ys < 240:
+                return "SO"
+            return "SE"
     return None
 
 
@@ -383,7 +377,6 @@ class Alerte:
             if get_touch(self.touch):
                 break
             time.sleep(.25)
-        Page.set_redraw(True)
         self.id_show = False
 
 

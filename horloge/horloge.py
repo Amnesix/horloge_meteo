@@ -182,8 +182,11 @@ class Horloge:
                 self.presto.partial_update(240, 240, 240, 240)
             if self.first or self.cfs:
                 self.calendar.affiche(self.cfs)
-                self.cfs = False
-                self.first = False
+                if self.cfs:
+                    self.cfs = False
+                    self.first = True
+                else:
+                    self.first = False
             self.last_second = second
             if self.alerte.id_show:
                 self.alerte.show()

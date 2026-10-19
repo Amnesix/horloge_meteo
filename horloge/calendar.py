@@ -3,6 +3,9 @@ import time
 
 from horloge.utils import MOIS, TZ, Color
 
+CADRAN = ((0, 0), (240, 0), (0, 240), (240, 240))
+nfs = 2
+
 
 def is_leap_year(year):
     return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
@@ -81,11 +84,12 @@ def iso_week_number(year, month, day):
 
 
 def monthly_calendar(year, month):
+    print(f"Calcule calendrier({year}, {month})")
     month_days = days_in_month(year, month)
     first_wday = weekday(year, month, 1)
 
     result = []
-    result.append(["", "lun", "mar", "mer", "jeu", "ven", "sam", "dim"])
+    result.append(["", "lu", "ma", "me", "je", "ve", "sa", "di"])
 
     py, pm = prev_month(year, month)
     prev_days = days_in_month(py, pm)
@@ -124,6 +128,7 @@ def monthly_calendar(year, month):
 
 class Calendar:
     pen = None
+    full_screen = False
 
     def __init__(self, presto, display, vector, touch, mqtt, alerte, loggin):
         loggin.log("Initialisation calendrier")
@@ -167,24 +172,24 @@ class Calendar:
             self.pen = pen
             self.display.set_pen(self.pen)
 
-    def draw_calendar(self, maj):
+    def draw_calendar(self, maj, cadran):
+        dx, dy = cadran
+        print(f"Cadran ({dx}, {dy}, 240, 240)")
         self.set_pen(Color.BLACK)
-        self.display.rectangle(0, 240, 240, 240)  # (12, 70, 58, 53)
+        self.display.rectangle(dx, dy, 240, 240)  # (12, 70, 58, 53)
         # Affichage du text
-        self.set_pen(self.fg)
+        # self.set_pen(self.fg)
+        self.set_pen(Color.LIGHTGREY)
         s = f"{MOIS[self.month - 1]} {self.year}"
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 24)
-        x, y = int(120 - self.vector.measure_text(s)[2] // 2), 280
+        x, y = dx + int(120 - self.vector.measure_text(s)[2] // 2), dy + 280
         self.vector.text(s, x, y + self.yoffset)
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 18)
-        self.set_pen(self.fg)
-        if maj:
-            self.init_calendar(time.time())
-        y = 55 + self.yoffset
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
+        y = dy + 55 + self.yoffset
         i = 0
         change_font = True
         for line in self.calendar:
-            x = 8
+            x = dx + 8
             first = True
             for s in line:
                 if first:
@@ -194,6 +199,7 @@ class Calendar:
                     if s == "1" and x != 7:
                         i += 1
                     if i == 1 or y == 55:
+                        # Affichage date du jour en orange (même mois, même année)
                         if str(
                                 self.mday
                         ) == s and self.year == self.ny and self.month == self.nm:
@@ -208,10 +214,26 @@ class Calendar:
             if change_font:
                 change_font = False
                 self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
-                                     20)
+                                     22)
             y += 25
-        self.presto.partial_update(0, 240, 240, 240)
+        print(f"partial_update({dx}, {dy}, 240, 240)")
+        self.presto.partial_update(dx, dy, 240, 240)
 
-    def affiche(self):
-        self.draw_calendar(True)
+    def affiche(self, full_screen):
+        self.init_calendar(time.time())
+        self.full_screen = full_screen
+        print(f"Show calendar {'full screen' if full_screen else ''}")
+        if full_screen:
+            for cadran in CADRAN:
+                self.draw_calendar(True, cadran)
+                self.set_month(self.month + 1)
+            while True:
+                self.touch.poll()
+                if self.touch.state:
+                    while self.touch.state:
+                        self.touch.poll()
+                    print("Sortie")
+                    return
+        else:
+            self.draw_calendar(True, CADRAN[2])
         gc.collect()

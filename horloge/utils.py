@@ -130,8 +130,8 @@ def wifi_connect(presto, loggin=None):
             return True
         except Exception as e:
             if loggin:
-                loggin.log(f"wifi_connect():Exception ({e})")
-            print(f"wifi_connect():Exception ({e})")
+                loggin.log(f"wifi_connect():Test API:Exception ({e})")
+            print(f"wifi_connect():Test API:Exception ({e})")
         return False
 
     try:
@@ -186,10 +186,14 @@ def get_touch(touch) -> "tuple[int, int] | str | None":
         if math.sqrt(dx * dx + dy * dy) < 10:
             if xs < 240:
                 if ys < 240:
+                    print("NO")
                     return "NO"
+                print("NE")
                 return "NE"
             if ys < 240:
+                print("SO")
                 return "SO"
+            print("SE")
             return "SE"
     return None
 

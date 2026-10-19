@@ -180,8 +180,9 @@ class Horloge:
                     log = self.vector.measure_text(text)
                     self.vector.text(text, 360 - int(log[2] / 2), 360)
                 self.presto.partial_update(240, 240, 240, 240)
-            if self.first:
-                self.calendar.affiche()
+            if self.first or self.cfs:
+                self.calendar.affiche(self.cfs)
+                self.cfs = False
                 self.first = False
             self.last_second = second
             if self.alerte.id_show:

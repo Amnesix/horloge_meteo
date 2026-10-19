@@ -130,7 +130,7 @@ class Horloge:
             self.cfs = True
         elif data == "SE":
             self.mfs = True
-        return True
+        return False
 
     def affiche(self):
         self.first = True
@@ -139,6 +139,7 @@ class Horloge:
         while True:
             if verifier_connexion(self.presto, self.loggin):
                 self.mqtt.reconnect()
+                self.first = True
             self.mqtt.check_msg()
             if self.gere_touch():
                 return

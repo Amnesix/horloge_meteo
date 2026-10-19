@@ -88,7 +88,7 @@ def monthly_calendar(year, month):
     first_wday = weekday(year, month, 1)
 
     result = []
-    result.append(["", "lu", "ma", "me", "je", "ve", "sa", "di"])
+    result.append(["", "Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"])
 
     py, pm = prev_month(year, month)
     prev_days = days_in_month(py, pm)
@@ -207,7 +207,7 @@ class Calendar:
                         else:
                             self.set_pen(self.fg)
                     else:
-                        self.set_pen(Color.GREY)
+                        self.set_pen(Color.DARKGREY)
                 l = int((25 - self.vector.measure_text(s)[2]) // 2)
                 self.vector.text(s, x + l, y + self.yoffset)
                 x += 28

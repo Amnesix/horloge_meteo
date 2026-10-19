@@ -272,6 +272,7 @@ class Horloge:
             # annee = f"{year}"
             # dim = self.vector.measure_text(annee)
             # self.vector.text(annee, 360 - int(dim[2] // 2), 160)
+            self.vector.set_font("Roboto-Bold.af", 64)
             heure = f"{hour}:{minute:02d}"
             dim = self.vector.measure_text(heure)
             self.vector.text(heure, 360 - int(dim[2] // 2), 220)

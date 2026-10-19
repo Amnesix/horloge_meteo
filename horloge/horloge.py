@@ -3,7 +3,10 @@ import sys
 import time
 
 import jpegdec
-from myapp.utils import (
+from picovector import Polygon
+from pngdec import PNG
+
+from horloge.utils import (
     JOURS,
     MOIS,
     TZ,
@@ -13,9 +16,7 @@ from myapp.utils import (
     update_time,
     verifier_connexion,
 )
-from myapp.version import __title__, __version__
-from picovector import Polygon
-from pngdec import PNG
+from horloge.version import __title__, __version__
 
 v = sys.version
 __python__ = "µPython - " + v.split(";")[0]

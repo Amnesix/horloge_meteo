@@ -5,9 +5,10 @@ import time
 
 import ntptime
 import requests
-from myapp.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
 from picovector import Polygon
 from requests import get
+
+from horloge.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
 
 OZOIR = (48.763827, 2.671739)
 OZOIR_NAME = "ozoir-la-ferriere"
@@ -123,7 +124,7 @@ def wifi_connect(presto, loggin=None):
                 loggin.log("Non connecté !")
             return False
         try:
-            response = get(api, headers=headers, timeout=5.0)
+            response = get(api, headers=headers, timeout=15.0)
             if loggin:
                 loggin.log(response.text)
             return True

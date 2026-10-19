@@ -1,8 +1,10 @@
 import gc
 import time
 
-from myapp.secret import headers
-from myapp.utils import (
+from requests import get
+
+from horloge.secret import headers
+from horloge.utils import (
     CAPTEURS,
     TZ,
     Color,
@@ -11,7 +13,6 @@ from myapp.utils import (
     get_touch,
     verifier_connexion,
 )
-from requests import get
 
 ASK_ALL_TEMP = True
 ASK_VIA_TEMPLATE = True

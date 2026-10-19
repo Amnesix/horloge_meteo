@@ -3,9 +3,10 @@ import gc
 import time
 
 import machine
-from myapp.secret import MQTT_PASSWD, MQTT_USER
-from myapp.utils import TZ, Color, Log, verifier_connexion
 from umqtt.simple import MQTTClient
+
+from horloge.secret import MQTT_PASSWD, MQTT_USER
+from horloge.utils import TZ, Color, Log, verifier_connexion
 
 _SOUSCRIPTIONS = {
     # Températures
@@ -160,13 +161,12 @@ class MQTT:
         _, _, _, h, m, s, _, _ = time.gmtime(self.last_msg + 3600 *
                                              TZ.get_offset(self.last_msg))
         if 'pong' in topic:
-            # Sur cet app, je ne trace plus le pong.
             # print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
             self.pong = True
             if len(self.pile) == 0:
                 return
         else:
-            print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
+            print(f"{h:02d}:{m:02d}>{s:02d}:Reception MQTT {topic} : {msg}")
             self.pile.append((topic, msg))
         if not self.fin_init:
             return

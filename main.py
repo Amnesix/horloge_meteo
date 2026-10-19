@@ -3,10 +3,10 @@ import time
 import presto
 from picovector import ANTIALIAS_BEST, PicoVector, Transform
 
-from myapp.calendar import Calendar
-from myapp.horloge import Horloge
-from myapp.mqtt import MQTT, MQTTLog
-from myapp.utils import (
+from horloge.calendar import Calendar
+from horloge.horloge import Horloge
+from horloge.mqtt import MQTT, MQTTLog
+from horloge.utils import (
     TZ,
     Alerte,
     Color,
@@ -15,7 +15,7 @@ from myapp.utils import (
     update_time,
     wifi_connect,
 )
-from myapp.version import __title__, __version__
+from horloge.version import __title__, __version__
 
 # Initialisation générale
 # layers=1 nécessaire pour partial_update()

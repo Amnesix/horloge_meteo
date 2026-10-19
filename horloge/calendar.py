@@ -1,7 +1,7 @@
 import gc
 import time
 
-from myapp.utils import MOIS, TZ, Color
+from horloge.utils import MOIS, TZ, Color
 
 
 def is_leap_year(year):

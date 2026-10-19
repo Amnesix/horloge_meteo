@@ -184,6 +184,8 @@ class Horloge:
                 self.alerte.show()
                 self.first = True
             if self.force_backlight is None:
+                if hour == minute == second == 0:
+                    self.first = True  # Réafficher le calendrier
                 if hour == 21:
                     if minute < 15:
                         self.backlight = .5

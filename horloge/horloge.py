@@ -30,6 +30,7 @@ class Horloge:
     backlight = 1.
     force_backlight = None
     hfs = cfs = mfs = False
+    last_NE = None
 
     def __init__(
         self,
@@ -125,7 +126,7 @@ class Horloge:
     def aff_NO(self, hour, minute, second):
         self.tr.reset()
         self.display.set_pen(Color.BLACK)
-        self.display.rectangle(0, 0, 480, 240)
+        self.display.rectangle(0, 0, 240, 240)
         self.jpg.open_file("img/cadran_240.jpg")
         self.jpg.decode(0, 0, jpegdec.JPEG_SCALE_HALF, dither=True)
 
@@ -157,6 +158,11 @@ class Horloge:
         self.presto.partial_update(0, 0, 240, 240)
 
     def aff_NE(self, month, day, wd, hour, minute):
+        if self.last_NE == (month, day, wd, hour, minute):
+            return
+        self.last_NE = (month, day, wd, hour, minute)
+        self.display.set_pen(Color.BLACK)
+        self.display.rectangle(240, 0, 240, 240)
         self.display.set_pen(self.fg)
         self.vector.set_font("Roboto-Medium.af", 40)
         jour = f"{JOURS[wd]}"

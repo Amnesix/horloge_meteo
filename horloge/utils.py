@@ -343,7 +343,7 @@ class Alerte:
         self.w = 374  # Largeur affichage max
         self.h = 235
 
-    def alerte(self, msg):
+    def alerte(self, msg, timeout=10):
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 32)
         words = msg.split()
         self.message.clear()
@@ -355,11 +355,12 @@ class Alerte:
                 self.message.append(word)
             else:
                 self.message[-1] += " " + word
-        self.id_show = True
+        # self.id_show = True
+        self.show(timeout)
 
     def show(self, timeout=10):
         # Fin de l'affichage :
-        s = time.time() + timeout
+        s = time.time() + (100000 if timeout == -1 else timeout)
         self.display.set_pen(Color.BLACK)
         self.display.clear()
         self.display.set_pen(Color.CYAN)
@@ -373,12 +374,18 @@ class Alerte:
             dim = self.vector.measure_text(line, x=0, y=0, angle=0)
             offset = (self.w - int(dim[2])) // 2
             self.vector.text(line, 52 + offset, hp + pos * 32)
+        msg = "Cliquer l'écran pour acquitter"
+        _, _, w, _ = self.vector.measure_text(msg)
+        x = 240 - int(w / 2)
+        y = 400
+        self.vector.text(msg, x, y)
         self.presto.update()
         while time.time() < s:
-            if get_touch(self.touch):
+            if get_touch(self.touch) is not None:
                 break
             time.sleep(.25)
-        self.id_show = False
+        # self.id_show = False
+        self.id_show = True
 
 
 class MyButton:

@@ -189,7 +189,7 @@ class Horloge:
                     self.first = False
             self.last_second = second
             if self.alerte.id_show:
-                self.alerte.show()
+                # self.alerte.show()
                 self.first = True
             if self.force_backlight is None:
                 if hour == minute == second == 0:

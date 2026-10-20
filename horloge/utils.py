@@ -5,15 +5,14 @@ import time
 
 import ntptime
 import requests
+from horloge.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
 from picovector import Polygon
 from requests import get
 
-from horloge.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
-
 OZOIR = (48.763827, 2.671739)
 OZOIR_NAME = "ozoir-la-ferriere"
-WEATHER_API = "https://api.weatherapi.com/v1/current.json"
-METEO_URL = f"{WEATHER_API}?key={METEO_KEY}&q={OZOIR_NAME}&aqi=no&lang=fr"
+WEATHER_API = "https://api.weatherapi.com/v1"
+METEO_URL = f"{WEATHER_API}/current.json?key={METEO_KEY}&q={OZOIR_NAME}&aqi=no&lang=fr"
 
 NTPHOST = (
     "0.fr.pool.ntp.org",
@@ -171,11 +170,54 @@ def verifier_connexion(presto, loggin):
     return False
 
 
+# ======================================================================
+#  Gestion de la météo
+# ======================================================================
+class WeatherAPIError(Exception):
+    """Raised when WeatherAPI returns an error response."""
+
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+        super().__init__(f"WeatherAPI error {code}: {message}")
+
+
+def get_forecast(location: str, days: int = 3) -> dict:
+    """
+    Get weather forecast for a location.
+
+    Args:
+        location: City name, lat/lon, zip code, or IP address
+        days: Number of forecast days (1-14; plan limits may apply)
+        alerts: Include weather alerts
+
+    Returns:
+        Dictionary containing location, current, and forecast data
+    """
+    params = [
+        f"key={METEO_KEY}",
+        f"q={location}",
+        f"days={days}",
+        f"aqi={'no'}",
+        f"alerts={'no'}",
+        f"lang={'fr'}",
+    ]
+
+    response = requests.get(f"{WEATHER_API}/forecast.json?{'&'.join(params)}",
+                            timeout=15)
+
+    return response.json()
+
+
 def get_weather():
-    rep = requests.get(METEO_URL, timeout=15)
-    return rep.json()
+    return get_forecast(OZOIR_NAME, 3)
+    # rep = requests.get(METEO_URL, timeout=15)
+    # return rep.json()
 
 
+# ======================================================================
+# Gestion de la dalle tactile
+# ======================================================================
 def get_touch(touch) -> "tuple[int, int] | str | None":
     touch.poll()
     if touch.state:

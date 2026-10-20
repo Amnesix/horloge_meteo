@@ -8,65 +8,15 @@ from umqtt.simple import MQTTClient
 from horloge.secret import MQTT_PASSWD, MQTT_USER
 from horloge.utils import TZ, Color, Log, verifier_connexion
 
-_SOUSCRIPTIONS = {
-    # Températures
-    "home/temp/dehors": "_dehors",
-    "home/temp/buandrie": "buandrie",
-    "home/temp/bureau": "bureau",
-    "home/temp/cuisine": "cuisine",
-    "home/temp/cyril": "cyril",
-    "home/temp/douche": "douche",
-    "home/temp/parent": "parents",
-    "home/temp/salon": "salon",
-    # Humidité
-    "home/humidity/dehors": "_dehors",
-    "home/humidity/buandrie": "buandrie",
-    "home/humidity/bureau": "bureau",
-    "home/humidity/cuisine": "cuisine",
-    "home/humidity/cyril": "cyril",
-    "home/humidity/douche": "douche",
-    "home/humidity/parent": "parents",
-    "home/humidity/salon": "salon",
-    # Interrupteurs
-    "home/switch/ventilo": "Ventilo",
-    "home/switch/rpi": "2nd écran",
-    "home/switch/eth": "Ethernet",
-    "home/switch/lenovo": "PC LENOVO",
-    "home/switch/cuisine": "Cuisine",
-    "home/switch/douche": "Douche",
-    "home/switch/lave_linge": "Lave linge",
-    "home/switch/deshum": "Déshumid.",
-    "home/switch/info": "PC Bureau",
-    "home/switch/pc_rfu": "PC NOUS RFU",
-    # Lave lave_linge
-    "home/puissance/lave_linge": "-",
-    "home/puissance/deshum": "-",
-    "home/lave_linge/fincycle": "-",
-    # Autres
-    "home/page": "-",
-    "home/commandes": "-",
-    "home/alarme": "-",
-}
 SOUSCRIPTIONS = {
+    "home/temp/dehors": "_dehors",
     "home/alerte": "-",
     "home/debug": "print('OK, je suis là')",
     "home/pong": ""
 }
 
 TOPIC_MSG = {
-    "2nd écran": "home/toggle/rpi",
-    "Douche": "home/toggle/douche",
-    "Cuisine": "home/toggle/cuisine",
-    "Ventilo": "home/toggle/ventilo",
-    "Lave linge": "home/toggle/lave_linge",
-    "Déshumid.": "home/toggle/deshum",
-    "PC LENOVO": "home/toggle/lenovo",
-    "Ethernet": "home/toggle/eth",
-    "PC Bureau": "home/toggle/info",
-    "PC NOUS RFU": "home/toggle/pc_rfu",
     "ping": "home/ping",
-    "alarme": "cmd/alarme",
-    "alerte": "cmd/alerte",
 }
 
 

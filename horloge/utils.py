@@ -5,9 +5,10 @@ import time
 
 import ntptime
 import requests
-from horloge.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
 from picovector import Polygon
 from requests import get
+
+from horloge.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
 
 OZOIR = (48.763827, 2.671739)
 OZOIR_NAME = "ozoir-la-ferriere"
@@ -170,72 +171,6 @@ def verifier_connexion(presto, loggin):
     return False
 
 
-# ======================================================================
-#  Gestion de la météo
-# ======================================================================
-class WeatherAPIError(Exception):
-    """Raised when WeatherAPI returns an error response."""
-
-    def __init__(self, code, message):
-        self.code = code
-        self.message = message
-        super().__init__(f"WeatherAPI error {code}: {message}")
-
-
-def get_forecast(location: str, days: int = 3) -> dict:
-    """
-    Get weather forecast for a location.
-
-    Args:
-        location: City name, lat/lon, zip code, or IP address
-        days: Number of forecast days (1-14; plan limits may apply)
-        alerts: Include weather alerts
-
-    Returns:
-        Dictionary containing location, current, and forecast data
-    """
-    params = [
-        f"key={METEO_KEY}",
-        f"q={location}",
-        f"days={days}",
-        f"aqi={'no'}",
-        f"alerts={'no'}",
-        f"lang={'fr'}",
-    ]
-
-    response = requests.get(f"{WEATHER_API}/forecast.json?{'&'.join(params)}",
-                            timeout=15)
-
-    return response.json()
-
-
-def get_weather():
-    return get_forecast(OZOIR_NAME, 3)
-    # rep = requests.get(METEO_URL, timeout=15)
-    # return rep.json()
-
-
-# ======================================================================
-# Gestion de la dalle tactile
-# ======================================================================
-def get_touch(touch) -> "tuple[int, int] | str | None":
-    touch.poll()
-    if touch.state:
-        xs, ys = touch.x, touch.y
-        while touch.state:
-            touch.poll()
-        dx, dy = xs - touch.x, ys - touch.y
-        if math.sqrt(dx * dx + dy * dy) < 10:
-            if xs < 240:
-                if ys < 240:
-                    return "NO"
-                return "SO"
-            if ys < 240:
-                return "NE"
-            return "SE"
-    return None
-
-
 def update_time(loggin, show_log=True):
     # Mise à l'heure
     if show_log:
@@ -311,6 +246,73 @@ class TZ:
                 last_sun_oct = day
                 break
         return time.mktime((year, 10, last_sun_oct, 3, 0, 0, 0, 0, 0))
+
+
+# ======================================================================
+#  Gestion de la météo
+# ======================================================================
+class WeatherAPIError(Exception):
+    """Raised when WeatherAPI returns an error response."""
+
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+        super().__init__(f"WeatherAPI error {code}: {message}")
+
+
+def get_forecast(location: str, days: int = 3) -> dict:
+    """
+    Get weather forecast for a location.
+
+    Args:
+        location: City name, lat/lon, zip code, or IP address
+        days: Number of forecast days (1-14; plan limits may apply)
+        alerts: Include weather alerts
+
+    Returns:
+        Dictionary containing location, current, and forecast data
+    """
+    params = [
+        f"key={METEO_KEY}",
+        f"q={location}",
+        f"days={days}",
+        f"aqi={'no'}",
+        f"alerts={'no'}",
+        f"lang={'fr'}",
+    ]
+
+    response = requests.get(f"{WEATHER_API}/forecast.json?{'&'.join(params)}",
+                            timeout=15)
+
+    return response.json()
+
+
+def get_weather():
+    """Retourner toutes les informations en un seul appel"""
+    return get_forecast(OZOIR_NAME, 3)
+    # rep = requests.get(METEO_URL, timeout=15)
+    # return rep.json()
+
+
+# ======================================================================
+# Gestion de la dalle tactile
+# ======================================================================
+def get_touch(touch) -> "tuple[int, int] | str | None":
+    touch.poll()
+    if touch.state:
+        xs, ys = touch.x, touch.y
+        while touch.state:
+            touch.poll()
+        dx, dy = xs - touch.x, ys - touch.y
+        if math.sqrt(dx * dx + dy * dy) < 10:
+            if xs < 240:
+                if ys < 240:
+                    return "NO"
+                return "SO"
+            if ys < 240:
+                return "NE"
+            return "SE"
+    return None
 
 
 class Color:

@@ -402,7 +402,7 @@ class Alerte:
                 self.message.append(word)
             else:
                 self.message[-1] += " " + word
-        # self.id_show = True
+        self.id_show = True
         self.show(timeout)
 
     def show(self, timeout=10):
@@ -432,7 +432,6 @@ class Alerte:
                 break
             time.sleep(.25)
         # self.id_show = False
-        self.id_show = True
 
 
 class MyButton:

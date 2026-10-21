@@ -111,7 +111,7 @@ class MQTT:
         _, _, _, h, m, s, _, _ = time.gmtime(self.last_msg + 3600 *
                                              TZ.get_offset(self.last_msg))
         if 'pong' in topic:
-            # print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
+            print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
             self.pong = True
             if len(self.pile) == 0:
                 return

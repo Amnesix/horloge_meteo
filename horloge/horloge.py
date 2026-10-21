@@ -3,6 +3,9 @@ import sys
 import time
 
 import jpegdec
+from picovector import Polygon
+from pngdec import PNG
+
 from horloge.utils import (
     JOURS,
     MOIS,
@@ -14,8 +17,6 @@ from horloge.utils import (
     verifier_connexion,
 )
 from horloge.version import __title__, __version__
-from picovector import Polygon
-from pngdec import PNG
 
 v = sys.version
 __python__ = "µPython - " + v.split(";")[0]
@@ -25,7 +26,6 @@ WIDTH, HEIGHT = 480, 480
 
 class Horloge:
     last_second = 0
-    total = 1
     backlight = 1.
     force_backlight = None
     hfs = cfs = mfs = False
@@ -58,8 +58,6 @@ class Horloge:
         self.titre = f"{__title__} - {__version__}"
         self.pos_jours = []
         self.topic = None
-        self.t_msg = 0
-        self.m_msg = ""
         self.offset = 0
         self.png = PNG(self.display)
         # len = int(self.vector.measure_text(self.titre)[2])
@@ -157,7 +155,7 @@ class Horloge:
         self.presto.partial_update(0, 0, 240, 240)
 
     def aff_NE(self, month, day, wd, hour, minute):
-        if self.last_NE == (month, day, wd, hour, minute):
+        if self.last_NE == (month, day, wd, hour, minute) and not self.first:
             return
         self.last_NE = (month, day, wd, hour, minute)
         self.display.set_pen(Color.BLACK)
@@ -270,14 +268,18 @@ class Horloge:
                 lst_bl = self.backlight
 
             # Quadran NO : Horloge analogique
+            print(f"{time.time()}:NO")
             self.aff_NO(hour, minute, second)
             # Quadran NE : Date / heure en texte
+            print(f"{time.time()}:NE")
             self.aff_NE(month, day, wd, hour, minute)
             # Quadran SE : Météo
             if (minute % 5) == 0 and second == 0 or self.first:
+                print(f"{time.time()}:SE")
                 self.aff_SE()
             # Quadran SO : Calendrier
             if self.first or self.cfs:
+                print(f"{time.time()}:SO")
                 self.aff_SO()
                 if self.cfs:
                     self.cfs = False
@@ -288,7 +290,7 @@ class Horloge:
             if self.alerte.id_show:
                 # self.alerte.show()
                 self.first = True
+                self.alerte.id_show = False
+                print("Demande de réaffichage complet")
             gc.collect()
-            self.total += 1
-
-            self.presto.partial_update(0, 0, 480, 240)
+            # self.presto.partial_update(0, 0, 480, 240)

@@ -204,13 +204,19 @@ class Horloge:
         log = self.vector.measure_text(text)
         self.vector.text(text, 360 - int(log[2] / 2), y + 70)
         try:
-            icon = f"icons128/{meteo['current']['condition']['code']}_{'day' if meteo['current']['is_day'] == 1 else 'night'}.png"
+            icon = '/'.join(
+                meteo['current']['condition']['icon'].split('/')[-2:])
+            icon = f"icons/{icon}"
             self.png.open_file(icon)
             self.png.decode(296, 350)
         except OSError:
             text = meteo['current']['condition']['text']
             log = self.vector.measure_text(text)
-            self.vector.text(text, 360 - int(log[2] / 2), 360)
+            self.vector.text(text, 360 - int(log[2] / 2), 390)
+            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
+            text = f"Icone {meteo['current']['condition']['code']} manquante"
+            log = self.vector.measure_text(text)
+            self.vector.text(text, 360 - int(log[2] / 2), 440)
         self.presto.partial_update(240, 240, 240, 240)
 
     def affiche(self):
@@ -223,6 +229,8 @@ class Horloge:
             now = time.time()
             if now == self.next_update_time:
                 # Mise à l'heure via NTP
+                if verifier_connexion(self.presto, self.loggin):
+                    self.mqtt.reconnect()
                 update_time(self.loggin, False)
             self.offset = 3600 * TZ.get_offset(now)
             _, month, day, hour, minute, second, wd, _ =\
@@ -231,9 +239,6 @@ class Horloge:
                 # On ne met à jour l'affichage qu'une fois par seconde
                 time.sleep_ms(10)
                 continue
-            if verifier_connexion(self.presto, self.loggin):
-                self.mqtt.reconnect()
-                self.first = True
             if self.force_backlight is None:
                 # Gestion luminosité. Plus tard, utilisation d'un capteur de lumière...
                 if hour == minute == second == 0:

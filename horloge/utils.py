@@ -276,13 +276,16 @@ def get_forecast(location: str, days: int = 3) -> dict:
         f"key={METEO_KEY}",
         f"q={location}",
         f"days={days}",
-        f"aqi={'no'}",
-        f"alerts={'no'}",
-        f"lang={'fr'}",
+        "aqi='no'",
+        "alerts='no'",
+        "lang='fr'",
     ]
 
-    response = requests.get(f"{WEATHER_API}/forecast.json?{'&'.join(params)}",
-                            timeout=15)
+    try:
+        response = requests.get(
+            f"{WEATHER_API}/forecast.json?{'&'.join(params)}", timeout=15)
+    except OSError:
+        return {}
 
     return response.json()
 

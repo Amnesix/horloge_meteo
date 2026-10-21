@@ -3,9 +3,6 @@ import sys
 import time
 
 import jpegdec
-from picovector import Polygon
-from pngdec import PNG
-
 from horloge.utils import (
     JOURS,
     MOIS,
@@ -17,6 +14,8 @@ from horloge.utils import (
     verifier_connexion,
 )
 from horloge.version import __title__, __version__
+from picovector import Polygon
+from pngdec import PNG
 
 v = sys.version
 __python__ = "µPython - " + v.split(";")[0]
@@ -194,15 +193,21 @@ class Horloge:
         self.display.set_pen(self.fg)
         y = 280
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 64)
-        text = f"{meteo['current']['temp_c']}oC"
-        log = self.vector.measure_text(text)
-        # le symbole ° est mal calculé pour la largeur !
-        text = text.replace('o', '°')
-        self.vector.text(text, 360 - int(log[2] / 2), y + 30)
+        try:
+            text = f"{meteo['current']['temp_c']}oC"
+            log = self.vector.measure_text(text)
+            # le symbole ° est mal calculé pour la largeur !
+            text = text.replace('o', '°')
+            self.vector.text(text, 360 - int(log[2] / 2), y + 30)
+        except KeyError:
+            pass
         self.vector.set_font("Roboto-Medium.af", 32)
-        text = f"{meteo['current']['wind_kph']}km/h {meteo['current']['wind_dir']}"
-        log = self.vector.measure_text(text)
-        self.vector.text(text, 360 - int(log[2] / 2), y + 70)
+        try:
+            text = f"{meteo['current']['wind_kph']}km/h {meteo['current']['wind_dir']}"
+            log = self.vector.measure_text(text)
+            self.vector.text(text, 360 - int(log[2] / 2), y + 70)
+        except KeyError:
+            pass
         try:
             icon = '/'.join(
                 meteo['current']['condition']['icon'].split('/')[-2:])

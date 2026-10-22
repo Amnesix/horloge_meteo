@@ -174,16 +174,16 @@ class Calendar:
     def draw_calendar(self, maj, cadran):
         dx, dy = cadran
         self.set_pen(Color.BLACK)
-        self.display.rectangle(dx, dy, 240, 240)  # (12, 70, 58, 53)
+        self.display.rectangle(dx, dy, 240, 240)
         # Affichage du text
         # self.set_pen(self.fg)
         self.set_pen(Color.LIGHTGREY)
         s = f"{MOIS[self.month - 1]} {self.year}"
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 28)
-        x, y = dx + int(120 - self.vector.measure_text(s)[2] // 2), dy + 40
+        x, y = dx + int(120 - self.vector.measure_text(s)[2] // 2), dy + 45
         self.vector.text(s, x, y + self.yoffset)
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 22)
-        y = dy + 55 + self.yoffset
+        y = dy + 70 + self.yoffset
         i = -1
         change_font = True
         for line in self.calendar:

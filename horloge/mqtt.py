@@ -1,11 +1,10 @@
-import binascii
 import gc
 import time
 
-import machine
+# import machine
 from umqtt.simple import MQTTClient
 
-from horloge.secret import MQTT_PASSWD, MQTT_USER
+from horloge.secret import IDENTITY, MQTT_PASSWD, MQTT_USER
 from horloge.utils import TZ, Color, Log, verifier_connexion
 
 SOUSCRIPTIONS = {
@@ -21,10 +20,6 @@ TOPIC_MSG = {
 
 
 class MQTT:
-    lt = None
-    dh = None
-    puissance_lv = "0.0"
-    puissance_dh = "0.0"
     last_ping = 0
 
     def __init__(self, broker, port, alerte, loggin):
@@ -47,8 +42,9 @@ class MQTT:
         self.fin_init = True
 
     def connect(self):
-        unique = str(binascii.hexlify(machine.unique_id()))[2:-1]
-        self.client_id = f'{unique}' + f"_{time.time() % 10000}"
+        # unique = str(binascii.hexlify(machine.unique_id()))[2:-1]
+        self.client_id = f'{IDENTITY}' + f"_{time.time() % 10000}"
+        self.loggin.log(f"MQTT client id {self.client_id}")
         self.client = MQTTClient(self.client_id,
                                  self.broker,
                                  port=self.port,
@@ -58,7 +54,7 @@ class MQTT:
         self.client.set_callback(self.mqtt_callback)
         try:
             self.client.connect()
-            self.loggin.log(f"MQTT connecté id={self.client_id}")
+            self.loggin.log("MQTT connecté")
             self.loggin.log("Souscription : 0%")
             t = len(SOUSCRIPTIONS)
             for n, k in enumerate(SOUSCRIPTIONS):
@@ -94,6 +90,9 @@ class MQTT:
         try:
             if self.client is not None:
                 self.client.publish(TOPIC_MSG[what], msg)
+            else:
+                print("send_msg() : client = None")
+                self.reconnect()
         except KeyError:
             print(f"Erreur de clé send_msg({what}, {msg})")
 
@@ -149,10 +148,6 @@ class MQTT:
             self.connect()
         except Exception as e:
             print(f"Error while waiting for MQTT messages: {e}")
-        if self.lt and time.time() - self.lt > 60\
-           and self.puissance_lv == "0.0"\
-           and self.puissance_dh == "0.0":
-            self.lt = None
 
 
 class MQTTLog:

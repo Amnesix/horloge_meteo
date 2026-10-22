@@ -30,6 +30,9 @@ class Horloge:
     force_backlight = None
     hfs = cfs = mfs = False
     last_NE = None
+    meteo = None
+    weather = 0
+    last_weather = 0
 
     def __init__(
         self,
@@ -184,55 +187,168 @@ class Horloge:
     def aff_SO(self):
         self.calendar.affiche(self.cfs)
 
-    def aff_SE(self):
-        meteo = get_weather()
-        self.display.set_pen(Color.BLACK)
-        self.display.rectangle(240, 240, 240, 240)
-        self.display.set_pen(self.fg)
+    def aff_current_weather(self, _):
+        if self.meteo is None:
+            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
+            text = "Pas de météo"
+            log = self.presto.measure_text(text)
+            self.vector.text(text, 360 - int(log[2] / 2), 360)
+            return
         y = 280
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 64)
         try:
-            text = f"{meteo['current']['temp_c']}oC"
+            text = f"{self.meteo['current']['temp_c']}°C"
             log = self.vector.measure_text(text)
             # le symbole ° est mal calculé pour la largeur !
-            text = text.replace('o', '°')
-            self.vector.text(text, 360 - int(log[2] / 2), y + 30)
+            # self.vector.text(text, 360 - int(log[2] / 2), y + 30)
+            self.vector.text(text, 250, y + 30)
         except KeyError:
             pass
-        self.vector.set_font("Roboto-Medium.af", 32)
+        self.vector.set_font("Roboto-Medium.af", 38)
         try:
-            text = f"{meteo['current']['wind_kph']}km/h {meteo['current']['wind_dir']}"
+            text = f"{self.meteo['current']['humidity']}%"
             log = self.vector.measure_text(text)
-            self.vector.text(text, 360 - int(log[2] / 2), y + 70)
+            self.vector.text(text, 470 - int(log[2]), y + 30)
+        except KeyError:
+            pass
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 36)
+        try:
+            text = f"{self.meteo['current']['wind_kph']}km/h {self.meteo['current']['wind_dir']}"
+            log = self.vector.measure_text(text)
+            self.vector.text(text, 360 - int(log[2] / 2), y + 75)
         except KeyError:
             pass
         try:
             icon = '/'.join(
-                meteo['current']['condition']['icon'].split('/')[-2:])
+                self.meteo['current']['condition']['icon'].split('/')[-2:])
             icon = f"icons/{icon}"
             self.png.open_file(icon)
-            self.png.decode(296, 350)
+            self.png.decode(296, 350, scale=1)
         except OSError:
-            text = meteo['current']['condition']['text']
+            text = self.meteo['current']['condition']['text']
             log = self.vector.measure_text(text)
             self.vector.text(text, 360 - int(log[2] / 2), 390)
             self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
-            text = f"Icone {meteo['current']['condition']['code']} manquante"
+            text = f"Icone {self.meteo['current']['condition']['code']} manquante"
             log = self.vector.measure_text(text)
             self.vector.text(text, 360 - int(log[2] / 2), 440)
+
+    def aff_hourly_weather(self, now):
+        if self.meteo is None:
+            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
+            text = "Pas de météo"
+            log = self.presto.measure_text(text)
+            self.vector.text(text, 360 - int(log[2] / 2), 360)
+            return
+        forecast = self.meteo['forecast']['forecastday'][0]['hour']
+        debut = 0
+        while forecast[debut]['time_epoch'] < now:
+            debut += 1
+        x = 248
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 28)
+        for _ in '123':
+            self.display.set_pen(self.fg)
+            y = 300
+            text = forecast[debut]['time'].split()[1]
+            # pos = int(self.vector.measure_text(text)[2])
+            self.vector.text(text, x, y)
+            y += 30
+            text = f"{forecast[debut]['temp_c']}°C"
+            # pos = int(self.vector.measure_text(text)[2])
+            self.vector.text(text, x, y)
+            icon = '/'.join(
+                forecast[debut]['condition']['icon'].split('/')[-2:])
+            icon = f"icons64/{icon}"
+            self.png.open_file(icon)
+            self.png.decode(x, 350)
+            debut += 1
+            x += 80
+
+    def aff_daily_weather(self, now):
+        if self.meteo is None:
+            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
+            text = "Pas de météo"
+            log = self.presto.measure_text(text)
+            self.vector.text(text, 360 - int(log[2] / 2), 360)
+            return
+        forecast = self.meteo['forecast']['forecastday']
+        x = 248
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 28)
+        for i in range(3):
+            self.display.set_pen(self.fg)
+            data = forecast[i]['day']
+            y = 300
+            text = forecast[i]['date'].split('-')
+            text = f"{text[2]}/{text[1]}"
+            self.vector.text(text, x, y)
+            y += 30
+            text = f"{data['maxtemp_c']}°C"
+            self.vector.text(text, x, y)
+            y += 30
+            text = f"{data['avgtemp_c']}°C"
+            self.vector.text(text, x, y)
+            y += 30
+            text = f"{data['mintemp_c']}°C"
+            self.vector.text(text, x, y)
+            y += 10
+            icon = '/'.join(data['condition']['icon'].split('/')[-2:])
+            icon = f"icons64/{icon}"
+            self.png.open_file(icon)
+            self.png.decode(x, y)
+            x += 80
+
+    def aff_SE(self, now, minute, second):
+        fct = (self.aff_current_weather, self.aff_hourly_weather,
+               self.aff_daily_weather)
+        if now - self.last_weather > 299 and (
+                minute % 5) == 0 and second == 0 or self.first:
+            self.meteo = get_weather()
+            self.last_weather = now
+        self.display.set_pen(Color.BLACK)
+        self.display.rectangle(240, 240, 240, 240)
+        self.display.set_pen(self.fg)
+        if self.mfs:
+            self.weather = (self.weather + 1) % len(fct)
+            self.mfs = False
+        fct[self.weather](now)
         self.presto.partial_update(240, 240, 240, 240)
+
+    def gere_backlight(self, hour, minute, second):
+        if self.force_backlight is None:
+            # Gestion luminosité. Plus tard, utilisation d'un capteur de lumière...
+            if hour == minute == second == 0:
+                self.first = True  # Réafficher le calendrier
+            if hour == 21:
+                if minute < 15:
+                    self.backlight = .5
+                elif minute < 30:
+                    self.backlight = .4
+                elif minute < 45:
+                    self.backlight = .3
+                else:
+                    self.backlight = .2
+            elif hour == 5 or hour == 22:
+                self.backlight = .1
+            elif 23 == hour or hour < 5:
+                self.backlight = .01
+            else:
+                self.backlight = 1
+        else:
+            self.backlight = self.force_backlight
 
     def affiche(self):
         self.first = True
         self.presto.set_backlight(self.backlight)
         lst_bl = self.backlight
         while True:
-            self.mqtt.check_msg()
+            if self.mqtt.client is not None:
+                self.mqtt.check_msg()
             self.gere_touch()
             now = time.time()
             if now == self.next_update_time:
                 # Mise à l'heure via NTP
                 if verifier_connexion(self.presto, self.loggin):
+                    print("verifier_connexion() => mqtt.reconnect()")
                     self.mqtt.reconnect()
                 update_time(self.loggin, False)
             self.offset = 3600 * TZ.get_offset(now)
@@ -242,44 +358,23 @@ class Horloge:
                 # On ne met à jour l'affichage qu'une fois par seconde
                 time.sleep_ms(10)
                 continue
-            if self.force_backlight is None:
-                # Gestion luminosité. Plus tard, utilisation d'un capteur de lumière...
-                if hour == minute == second == 0:
-                    self.first = True  # Réafficher le calendrier
-                if hour == 21:
-                    if minute < 15:
-                        self.backlight = .5
-                    elif minute < 30:
-                        self.backlight = .4
-                    elif minute < 45:
-                        self.backlight = .3
-                    else:
-                        self.backlight = .2
-                elif hour == 5 or hour == 22:
-                    self.backlight = .1
-                elif 23 == hour or hour < 5:
-                    self.backlight = .01
-                else:
-                    self.backlight = 1
-            else:
-                self.backlight = self.force_backlight
+            self.gere_backlight(hour, minute, second)
             if self.backlight != lst_bl:
                 self.presto.set_backlight(self.backlight)
                 lst_bl = self.backlight
 
             # Quadran NO : Horloge analogique
-            print(f"{time.time()}:NO")
+            # print(f"{time.time()}:NO")
             self.aff_NO(hour, minute, second)
             # Quadran NE : Date / heure en texte
-            print(f"{time.time()}:NE")
+            # print(f"{time.time()}:NE")
             self.aff_NE(month, day, wd, hour, minute)
             # Quadran SE : Météo
-            if (minute % 5) == 0 and second == 0 or self.first:
-                print(f"{time.time()}:SE")
-                self.aff_SE()
+            # print(f"{time.time()}:SE")
+            self.aff_SE(now, minute, second)
             # Quadran SO : Calendrier
             if self.first or self.cfs:
-                print(f"{time.time()}:SO")
+                # print(f"{time.time()}:SO")
                 self.aff_SO()
                 if self.cfs:
                     self.cfs = False

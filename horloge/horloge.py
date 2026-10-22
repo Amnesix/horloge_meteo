@@ -249,17 +249,33 @@ class Horloge:
         for _ in '123':
             self.display.set_pen(self.fg)
             y = 300
-            text = forecast[debut]['time'].split()[1]
-            # pos = int(self.vector.measure_text(text)[2])
-            self.vector.text(text, x, y)
-            y += 30
-            text = f"{forecast[debut]['temp_c']}°C"
-            # pos = int(self.vector.measure_text(text)[2])
-            self.vector.text(text, x, y)
-            icon = '/'.join(
-                forecast[debut]['condition']['icon'].split('/')[-2:])
-            icon = f"icons64/{icon}"
-            self.png.open_file(icon)
+            try:
+                text = forecast[debut]['time'].split()[1]
+                # pos = int(self.vector.measure_text(text)[2])
+                self.vector.text(text, x, y)
+                y += 30
+            except IndexError:
+                forecast = self.meteo['forecast']['forecastday'][1]['hour']
+                debut = 0
+                try:
+                    text = forecast[debut]['time'].split()[1]
+                    self.vector.text(text, x, y)
+                    y += 30
+                except IndexError:
+                    print("Double exception d'index")
+            try:
+                text = f"{forecast[debut]['temp_c']}°C"
+                # pos = int(self.vector.measure_text(text)[2])
+                self.vector.text(text, x, y)
+            except IndexError:
+                print("Erreur d'index #2")
+            try:
+                icon = '/'.join(
+                    forecast[debut]['condition']['icon'].split('/')[-2:])
+                icon = f"icons64/{icon}"
+                self.png.open_file(icon)
+            except IndexError:
+                print("Erreur d'index #3")
             self.png.decode(x, 350)
             debut += 1
             x += 80

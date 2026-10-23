@@ -59,6 +59,7 @@ def get_api():
 
 
 class Log:
+    screen_update = False
 
     def __init__(self, presto, display, vector, title):
         self.presto = presto
@@ -104,6 +105,7 @@ class Log:
             self.vector.text(data[1], 0, (index + 2) * 25)
         self.presto.update()
         self.new_message = False
+        self.screen_update = True
 
     def get_stat(self):
         """Nombre de message par minutes sur les len(msg) derniers messages"""

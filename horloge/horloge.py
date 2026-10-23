@@ -396,7 +396,7 @@ class Horloge:
             # print(f"{time.time()}:SE")
             self.aff_SE(now, minute, second)
             # Quadran SO : Calendrier
-            if self.first or self.cfs:
+            if self.first or self.cfs or self.loggin.screen_update:
                 # print(f"{time.time()}:SO")
                 self.aff_SO()
                 if self.cfs:
@@ -411,4 +411,5 @@ class Horloge:
                 self.alerte.id_show = False
                 print("Demande de réaffichage complet")
             gc.collect()
+            self.loggin.screen_update = False
             # self.presto.partial_update(0, 0, 480, 240)

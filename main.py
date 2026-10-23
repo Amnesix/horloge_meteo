@@ -5,7 +5,7 @@ from picovector import ANTIALIAS_BEST, PicoVector, Transform
 
 from horloge.calendar import Calendar
 from horloge.horloge import Horloge
-from horloge.mqtt import MQTT, MQTTLog
+from horloge.mqtt import MQTT
 from horloge.utils import (
     TZ,
     Alerte,
@@ -51,7 +51,7 @@ alerte = Alerte(presto, display, vector, touch, loggin)
 broker, port = get_api()[1]
 mqtt = MQTT(broker, port, alerte, loggin)
 # Création des différents objets page
-mqttlogs = MQTTLog(presto, display, vector, touch, mqtt, alerte)
+# mqttlogs = MQTTLog(presto, display, vector, touch, mqtt, alerte)
 calendar = Calendar(presto, display, vector, touch, mqtt, alerte, loggin)
 horloge = Horloge(presto, display, vector, t, touch, mqtt, calendar, alerte,
                   loggin)

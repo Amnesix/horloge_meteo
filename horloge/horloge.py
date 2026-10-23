@@ -225,13 +225,17 @@ class Horloge:
             self.png.open_file(icon)
             self.png.decode(296, 350, scale=1)
         except OSError:
-            text = self.meteo['current']['condition']['text']
-            log = self.vector.measure_text(text)
-            self.vector.text(text, 360 - int(log[2] / 2), 390)
-            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
-            text = f"Icone {self.meteo['current']['condition']['code']} manquante"
-            log = self.vector.measure_text(text)
-            self.vector.text(text, 360 - int(log[2] / 2), 440)
+            try:
+                text = self.meteo['current']['condition']['text']
+                log = self.vector.measure_text(text)
+                self.vector.text(text, 360 - int(log[2] / 2), 390)
+                self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
+                                     20)
+                text = f"Icone {self.meteo['current']['condition']['code']} manquante"
+                log = self.vector.measure_text(text)
+                self.vector.text(text, 360 - int(log[2] / 2), 440)
+            except KeyError as e:
+                print(f"Double exception (237) : {e}")
 
     def aff_hourly_weather(self, now):
         if self.meteo is None:
@@ -261,8 +265,8 @@ class Horloge:
                     text = forecast[debut]['time'].split()[1]
                     self.vector.text(text, x, y)
                     y += 30
-                except IndexError:
-                    print("Double exception d'index")
+                except IndexError as e:
+                    print(f"Double exception (269) : {e}")
             try:
                 text = f"{forecast[debut]['temp_c']}°C"
                 # pos = int(self.vector.measure_text(text)[2])

@@ -411,5 +411,5 @@ class Horloge:
                 self.alerte.id_show = False
                 print("Demande de réaffichage complet")
             gc.collect()
-            self.loggin.screen_update = False
+            self.loggin.acquitte()
             # self.presto.partial_update(0, 0, 480, 240)

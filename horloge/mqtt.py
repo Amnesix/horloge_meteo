@@ -95,6 +95,8 @@ class MQTT:
                 self.reconnect()
         except KeyError:
             print(f"Erreur de clé send_msg({what}, {msg})")
+        except OSError as e:
+            print(f"Erreur MQTT send_msg : {e}")
 
     def set_callback(self, fct):
         self.callbacks.append(fct)

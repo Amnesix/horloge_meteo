@@ -370,6 +370,7 @@ class Horloge:
                 if verifier_connexion(self.presto, self.loggin):
                     print("verifier_connexion() => mqtt.reconnect()")
                     self.mqtt.reconnect()
+                    self.first = True
                 update_time(self.loggin, False)
             self.offset = 3600 * TZ.get_offset(now)
             _, month, day, hour, minute, second, wd, _ =\

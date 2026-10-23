@@ -178,7 +178,7 @@ class Horloge:
         # annee = f"{year}"
         # dim = self.vector.measure_text(annee)
         # self.vector.text(annee, 360 - int(dim[2] // 2), 160)
-        self.vector.set_font("Roboto-Bold.af", 64)
+        self.vector.set_font("Roboto-Medium.af", 72)
         heure = f"{hour}:{minute:02d}"
         dim = self.vector.measure_text(heure)
         self.vector.text(heure, 360 - int(dim[2] // 2), 220)
@@ -195,7 +195,7 @@ class Horloge:
             self.vector.text(text, 360 - int(log[2] / 2), 360)
             return
         y = 280
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 64)
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 60)
         try:
             text = f"{self.meteo['current']['temp_c']}°C"
             log = self.vector.measure_text(text)

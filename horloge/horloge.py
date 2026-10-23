@@ -224,6 +224,8 @@ class Horloge:
             icon = f"icons/{icon}"
             self.png.open_file(icon)
             self.png.decode(296, 350, scale=1)
+        except KeyError:
+            pass
         except OSError:
             try:
                 text = self.meteo['current']['condition']['text']

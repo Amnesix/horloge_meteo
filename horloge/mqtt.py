@@ -8,14 +8,8 @@ from horloge.secret import IDENTITY, MQTT_PASSWD, MQTT_USER
 from horloge.utils import TZ, Color, Log, verifier_connexion
 
 SOUSCRIPTIONS = {
-    "home/temp/dehors": "_dehors",
     "home/alerte": "-",
     "home/debug": "print('OK, je suis là')",
-    "home/pong": ""
-}
-
-TOPIC_MSG = {
-    "ping": "home/ping",
 }
 
 
@@ -33,7 +27,6 @@ class MQTT:
         self.fin_init = False
         self.last_msg = 0
         self.connect()
-        self.pong = True
         # Autoreconnexion par défaut
         self.autoreco = True
         loggin.log("Connexion au broker MQTT OK.")
@@ -111,14 +104,8 @@ class MQTT:
         self.last_msg = time.time()
         _, _, _, h, m, s, _, _ = time.gmtime(self.last_msg + 3600 *
                                              TZ.get_offset(self.last_msg))
-        if 'pong' in topic:
-            print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
-            self.pong = True
-            if len(self.pile) == 0:
-                return
-        else:
-            print(f"{h:02d}:{m:02d}>{s:02d}:Reception MQTT {topic} : {msg}")
-            self.pile.append((topic, msg))
+        print(f"{h:02d}:{m:02d}>{s:02d}:Reception MQTT {topic} : {msg}")
+        self.pile.append((topic, msg))
         if not self.fin_init:
             return
         while len(self.pile):
@@ -134,14 +121,6 @@ class MQTT:
         return SOUSCRIPTIONS[topic]
 
     def check_msg(self):
-        if time.time() - self.last_ping >= 120:
-            # S'il s'est écoulé plus de 120s sans pong, on se reconnecte
-            if not self.pong and self.autoreco:
-                print("Tentative de reconnexion de mqtt")
-                self.reconnect()
-            self.send_msg("ping", "")
-            self.last_ping = time.time()
-            self.pong = False
         try:
             if self.client is not None:
                 self.client.check_msg()

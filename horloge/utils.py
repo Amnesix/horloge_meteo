@@ -6,9 +6,8 @@ import time
 import ntptime
 import requests
 from picovector import Polygon
-from requests import get
 
-from horloge.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT, headers
+from horloge.secret import APIHA, CONFIG, METEO_KEY, MQTT_DISTANT
 
 OZOIR = (48.763827, 2.671739)
 OZOIR_NAME = "ozoir-la-ferriere"
@@ -118,24 +117,6 @@ class Log:
 
 def wifi_connect(presto, loggin=None):
     global net_config
-
-    def teste_connexion():
-        # En cas de reonnexion, j'ai systématiquement un TIMEOUT. Pourquoi ?
-        if not presto.wifi.isconnected():
-            if loggin:
-                loggin.log("Non connecté !")
-            return False
-        try:
-            response = get(api, headers=headers, timeout=15.0)
-            if loggin:
-                loggin.log(response.text)
-            return True
-        except Exception as e:
-            if loggin:
-                loggin.log(f"wifi_connect():Test API:Exception ({e})")
-            print(f"wifi_connect():Test API:Exception ({e})")
-        return False
-
     try:
         with open("wifi.json", "rt") as f:
             d = json.load(f)
@@ -154,7 +135,6 @@ def wifi_connect(presto, loggin=None):
             d["indice"] = indice
             if loggin is not None:
                 loggin.log(f"IP : {presto.wifi.ipv4()}")
-            teste_connexion()
             with open("wifi.json", "wt") as f:
                 json.dump(d, f)
             return
@@ -178,7 +158,8 @@ def update_time(loggin, show_log=True):
     if show_log:
         loggin.log("Mise à l'heure")
     server = random.choice(range(4))
-    while True:
+    # 8 tentatives maximum
+    for _ in range(8):
         s = f" * Serveur NTP {NTPHOST[server]}"
         if show_log:
             loggin.log(s)
@@ -195,7 +176,8 @@ def update_time(loggin, show_log=True):
             if show_log:
                 s += " : OK"
                 loggin.log(s, nl=False)
-            return
+            return True
+    return False
 
 
 class TZ:
@@ -232,8 +214,8 @@ class TZ:
         last_sun_march = 31
         # Rechercher le dernier dimanche du mois de mars
         for day in range(31, 24, -1):
-            if (time.localtime(time.mktime(
-                (year, 3, day, 2, 0, 0, 0, 0, 0)))[6] == 6):  # dimanche
+            data = (year, 3, day, 2, 0, 0, 0, 0, 0)
+            if (time.localtime(time.mktime(data))[6] == 6):  # dimanche
                 last_sun_march = day
                 break
         return time.mktime((year, 3, last_sun_march, 2, 0, 0, 0, 0, 0))
@@ -243,8 +225,8 @@ class TZ:
         last_sun_oct = 31
         # Rechercher le dernier dimanche du mois d'octobre
         for day in range(31, 24, -1):
-            if time.localtime(time.mktime(
-                (year, 10, day, 3, 0, 0, 0, 0, 0)))[6] == 6:
+            data = (year, 10, day, 3, 0, 0, 0, 0, 0)
+            if time.localtime(time.mktime(data))[6] == 6:
                 last_sun_oct = day
                 break
         return time.mktime((year, 10, last_sun_oct, 3, 0, 0, 0, 0, 0))
@@ -375,7 +357,6 @@ class Color:
 
 
 class Alerte:
-    message = []
     id_show = False
 
     def __init__(self, presto, display, vector, touch, loggin):
@@ -391,6 +372,7 @@ class Alerte:
         self.fond.rectangle(50, 80, 380, 235)
         self.w = 374  # Largeur affichage max
         self.h = 235
+        self.message = []
 
     def alerte(self, msg, timeout=10):
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 32)

@@ -12,6 +12,8 @@ SOUSCRIPTIONS = {
     "home/debug": "print('OK, je suis là')",
 }
 
+TOPIC_MSG = {}
+
 
 class MQTT:
     last_ping = 0
@@ -102,9 +104,9 @@ class MQTT:
         topic = topic.decode()
         msg = msg.decode('utf-8')
         self.last_msg = time.time()
-        _, _, _, h, m, s, _, _ = time.gmtime(self.last_msg + 3600 *
-                                             TZ.get_offset(self.last_msg))
-        print(f"{h:02d}:{m:02d}>{s:02d}:Reception MQTT {topic} : {msg}")
+        data = time.gmtime(self.last_msg + 3600 * TZ.get_offset(self.last_msg))
+        _, _, _, h, m, s, _, _ = data
+        print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
         self.pile.append((topic, msg))
         if not self.fin_init:
             return
@@ -127,8 +129,10 @@ class MQTT:
         except OSError:
             print("Deconnexion MQTT")
             self.connect()
+            return True
         except Exception as e:
             print(f"Error while waiting for MQTT messages: {e}")
+        return False
 
 
 class MQTTLog:
@@ -147,8 +151,6 @@ class MQTTLog:
 
     def cb(self, topic, msg):
         """CallBack messages MQTT"""
-        t = time.time()
-        _, _, _, h, m, s, _, _ = time.gmtime(t + TZ.get_offset(t) * 3600)
         if 'alert' in topic:
             self.alerte.alerte(msg)
         elif 'debug' in topic:

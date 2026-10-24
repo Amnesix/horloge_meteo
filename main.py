@@ -38,7 +38,8 @@ loggin = Log(presto, display, vector, f"{__title__} - {__version__}")
 loggin.log("Connexion Wifi en cours...")
 # Connection / Mise à l'heure
 wifi_connect(presto, loggin)
-update_time(loggin)
+while not update_time(loggin):
+    pass
 TZ.init(loggin)
 s = time.time()
 start = time.time()
@@ -52,7 +53,7 @@ broker, port = get_api()[1]
 mqtt = MQTT(broker, port, alerte, loggin)
 # Création des différents objets page
 # mqttlogs = MQTTLog(presto, display, vector, touch, mqtt, alerte)
-calendar = Calendar(presto, display, vector, touch, mqtt, alerte, loggin)
+calendar = Calendar(presto, display, vector, touch, alerte, loggin)
 horloge = Horloge(presto, display, vector, t, touch, mqtt, calendar, alerte,
                   loggin)
 

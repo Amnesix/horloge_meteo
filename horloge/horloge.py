@@ -69,6 +69,7 @@ class Horloge:
         # Pour le décodage de l'image de fond
         self.jpg = jpegdec.JPEG(self.display)
 
+        self.mqtt.set_callback(self.mqtt_cb)
         self.next_update_time = time.time() + 12 * 60 * 60
 
         self.hub = Polygon()
@@ -108,6 +109,16 @@ class Horloge:
         self.display.set_pen(Color.BLACK)
         self.display.clear()
 
+    def mqtt_cb(self, topic, msg):
+        """CallBack messages MQTT"""
+        if 'alert' in topic:
+            self.alerte.alerte(msg)
+            self.first = True
+        elif 'debug' in topic:
+            # TODO >JMO< À VÉRIFIER !!!
+            print(f'exec({msg})')
+            exec(msg)
+
     def set_backlight(self, bl):
         self.backlight = bl
         print(f'backlight = {bl}')
@@ -124,6 +135,7 @@ class Horloge:
             self.mfs = True
 
     def aff_NO(self, hour, minute, second):
+        start = time.time_ns()
         self.tr.reset()
         self.display.set_pen(Color.BLACK)
         self.display.rectangle(0, 0, 240, 240)
@@ -156,8 +168,10 @@ class Horloge:
         self.tr.reset()
         self.vector.draw(self.hub)
         self.presto.partial_update(0, 0, 240, 240)
+        print(f"Aff NO : {(time.time_ns() - start) // 10**6}ms")
 
     def aff_NE(self, month, day, wd, hour, minute):
+        start = time.time_ns()
         if self.last_NE == (month, day, wd, hour, minute) and not self.first:
             return
         self.last_NE = (month, day, wd, hour, minute)
@@ -183,15 +197,18 @@ class Horloge:
         dim = self.vector.measure_text(heure)
         self.vector.text(heure, 360 - int(dim[2] // 2), 220)
         self.presto.partial_update(240, 0, 240, 240)
+        print(f"Aff NE : {(time.time_ns() - start) // 10**6}ms")
 
     def aff_SO(self):
+        start = time.time_ns()
         self.calendar.affiche(self.cfs)
+        print(f"Aff SO : {(time.time_ns() - start) // 10**6}ms")
 
     def aff_current_weather(self, _):
         if self.meteo is None:
             self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
             text = "Pas de météo"
-            log = self.presto.measure_text(text)
+            log = self.vector.measure_text(text)
             self.vector.text(text, 360 - int(log[2] / 2), 360)
             return
         y = 280
@@ -243,7 +260,7 @@ class Horloge:
         if self.meteo is None:
             self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
             text = "Pas de météo"
-            log = self.presto.measure_text(text)
+            log = self.vector.measure_text(text)
             self.vector.text(text, 360 - int(log[2] / 2), 360)
             return
         forecast = self.meteo['forecast']['forecastday'][0]['hour']
@@ -290,7 +307,7 @@ class Horloge:
         if self.meteo is None:
             self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 20)
             text = "Pas de météo"
-            log = self.presto.measure_text(text)
+            log = self.vector.measure_text(text)
             self.vector.text(text, 360 - int(log[2] / 2), 360)
             return
         forecast = self.meteo['forecast']['forecastday']
@@ -320,10 +337,10 @@ class Horloge:
             x += 80
 
     def aff_SE(self, now, minute, second):
+        start = time.time_ns()
         fct = (self.aff_current_weather, self.aff_hourly_weather,
                self.aff_daily_weather)
-        if now - self.last_weather > 299 and (
-                minute % 5) == 0 and second == 0 or self.first:
+        if now - self.last_weather >= 300:
             self.meteo = get_weather()
             self.last_weather = now
         self.display.set_pen(Color.BLACK)
@@ -334,6 +351,7 @@ class Horloge:
             self.mfs = False
         fct[self.weather](now)
         self.presto.partial_update(240, 240, 240, 240)
+        print(f"Aff SE : {(time.time_ns() - start) // 10**6}ms")
 
     def gere_backlight(self, hour, minute, second):
         if self.force_backlight is None:
@@ -363,16 +381,14 @@ class Horloge:
         self.presto.set_backlight(self.backlight)
         lst_bl = self.backlight
         while True:
-            if self.mqtt.client is not None:
-                self.mqtt.check_msg()
+            if self.mqtt.client is not None and self.mqtt.check_msg():
+                self.first = True
             self.gere_touch()
             now = time.time()
             if now == self.next_update_time:
+                # Éventuellement, reconnexion wifi
+                verifier_connexion(self.presto, self.loggin)
                 # Mise à l'heure via NTP
-                if verifier_connexion(self.presto, self.loggin):
-                    print("verifier_connexion() => mqtt.reconnect()")
-                    self.mqtt.reconnect()
-                    self.first = True
                 update_time(self.loggin, False)
             self.offset = 3600 * TZ.get_offset(now)
             _, month, day, hour, minute, second, wd, _ =\
@@ -396,7 +412,7 @@ class Horloge:
             # print(f"{time.time()}:SE")
             self.aff_SE(now, minute, second)
             # Quadran SO : Calendrier
-            if self.first or self.cfs or self.loggin.screen_update:
+            if self.first or self.cfs:  # or self.loggin.screen_update:
                 # print(f"{time.time()}:SO")
                 self.aff_SO()
                 if self.cfs:

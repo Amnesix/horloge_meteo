@@ -128,14 +128,14 @@ def monthly_calendar(year, month):
 class Calendar:
     pen = None
     full_screen = False
+    year = month = -1
 
-    def __init__(self, presto, display, vector, touch, mqtt, alerte, loggin):
+    def __init__(self, presto, display, vector, touch, alerte, loggin):
         loggin.log("Initialisation calendrier")
         self.presto = presto
         self.display = display
         self.vector = vector
         self.touch = touch
-        self.mqtt = mqtt
         self.alerte = alerte
         self.loggin = loggin
         self.color_we = display.create_pen(118, 118, 118)
@@ -147,6 +147,8 @@ class Calendar:
     def init_calendar(self, s):
         self.offset = 3600 * TZ.get_offset(s)
         self.ny, self.nm, d, _, _, _, _, _ = time.gmtime(s + self.offset)
+        if self.year == self.ny and self.month == self.nm:
+            return
         self.year = self.ny
         self.month = self.nm
         self.mday = d  # Utilisé pour la surbrillance de la date courante

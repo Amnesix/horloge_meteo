@@ -446,3 +446,11 @@ class MyButton:
 
     def bounds(self) -> tuple[int, int, int, int]:
         return self.x1, self.y1, self.w, self.h
+
+
+class Update_App:
+    """Classe de mise à jour de l'application"""
+    URL = "192.168.1.16"
+
+    def __init__(self, presto):
+        self.presto = presto

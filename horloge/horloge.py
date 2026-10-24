@@ -135,7 +135,7 @@ class Horloge:
             self.mfs = True
 
     def aff_NO(self, hour, minute, second):
-        start = time.time_ns()
+        # start = time.time_ns()
         self.tr.reset()
         self.display.set_pen(Color.BLACK)
         self.display.rectangle(0, 0, 240, 240)
@@ -168,10 +168,10 @@ class Horloge:
         self.tr.reset()
         self.vector.draw(self.hub)
         self.presto.partial_update(0, 0, 240, 240)
-        print(f"Aff NO : {(time.time_ns() - start) // 10**6}ms")
+        # print(f"Aff NO : {(time.time_ns() - start) // 10**6}ms")
 
     def aff_NE(self, month, day, wd, hour, minute):
-        start = time.time_ns()
+        # start = time.time_ns()
         if self.last_NE == (month, day, wd, hour, minute) and not self.first:
             return
         self.last_NE = (month, day, wd, hour, minute)
@@ -197,12 +197,12 @@ class Horloge:
         dim = self.vector.measure_text(heure)
         self.vector.text(heure, 360 - int(dim[2] // 2), 220)
         self.presto.partial_update(240, 0, 240, 240)
-        print(f"Aff NE : {(time.time_ns() - start) // 10**6}ms")
+        # print(f"Aff NE : {(time.time_ns() - start) // 10**6}ms")
 
     def aff_SO(self):
-        start = time.time_ns()
+        # start = time.time_ns()
         self.calendar.affiche(self.cfs)
-        print(f"Aff SO : {(time.time_ns() - start) // 10**6}ms")
+        # print(f"Aff SO : {(time.time_ns() - start) // 10**6}ms")
 
     def aff_current_weather(self, _):
         if self.meteo is None:
@@ -337,7 +337,7 @@ class Horloge:
             x += 80
 
     def aff_SE(self, now, minute, second):
-        start = time.time_ns()
+        # start = time.time_ns()
         fct = (self.aff_current_weather, self.aff_hourly_weather,
                self.aff_daily_weather)
         if now - self.last_weather >= 300:
@@ -351,7 +351,7 @@ class Horloge:
             self.mfs = False
         fct[self.weather](now)
         self.presto.partial_update(240, 240, 240, 240)
-        print(f"Aff SE : {(time.time_ns() - start) // 10**6}ms")
+        # print(f"Aff SE : {(time.time_ns() - start) // 10**6}ms")
 
     def gere_backlight(self, hour, minute, second):
         if self.force_backlight is None:
@@ -381,10 +381,10 @@ class Horloge:
         self.presto.set_backlight(self.backlight)
         lst_bl = self.backlight
         while True:
+            now = time.time()
             if self.mqtt.client is not None and self.mqtt.check_msg():
                 self.first = True
             self.gere_touch()
-            now = time.time()
             if now == self.next_update_time:
                 # Éventuellement, reconnexion wifi
                 verifier_connexion(self.presto, self.loggin)

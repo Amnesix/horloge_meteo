@@ -8,11 +8,12 @@ from horloge.secret import IDENTITY, MQTT_PASSWD, MQTT_USER
 from horloge.utils import TZ, Color, Log, verifier_connexion
 
 SOUSCRIPTIONS = {
+    "home/pong": "-",
     "home/alerte": "-",
     "home/debug": "print('OK, je suis là')",
 }
 
-TOPIC_MSG = {}
+TOPIC_MSG = {"ping": "home/ping"}
 
 
 class MQTT:
@@ -28,6 +29,7 @@ class MQTT:
         self.pile = []
         self.fin_init = False
         self.last_msg = 0
+        self.pong = True
         self.connect()
         # Autoreconnexion par défaut
         self.autoreco = True
@@ -106,6 +108,11 @@ class MQTT:
         self.last_msg = time.time()
         data = time.gmtime(self.last_msg + 3600 * TZ.get_offset(self.last_msg))
         _, _, _, h, m, s, _, _ = data
+        if 'pong' in topic:
+            self.pong = True
+            print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
+            if len(self.pile) == 0:
+                return
         print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")
         self.pile.append((topic, msg))
         if not self.fin_init:
@@ -123,11 +130,19 @@ class MQTT:
         return SOUSCRIPTIONS[topic]
 
     def check_msg(self):
+        t = time.time()
+        if t - self.last_ping >= 300:
+            if not self.pong:  # and self.autoreco:
+                print("Perte mqtt, reconnexion")
+                self.reconnect()
+            self.pong = False
+            self.send_msg("ping", "")
+            self.last_ping = t
         try:
             if self.client is not None:
                 self.client.check_msg()
-        except OSError:
-            print("Deconnexion MQTT")
+        except OSError as e:
+            print(f"{time.time()}:Erreur MQTT {e}")
             self.connect()
             return True
         except Exception as e:

@@ -4,7 +4,7 @@ import time
 from umqtt.simple import MQTTClient
 
 from horloge.secret import IDENTITY, MQTT_PASSWD, MQTT_USER
-from horloge.utils import TZ
+from horloge.utils import TZ, verifier_connexion
 
 SOUSCRIPTIONS = {
     "home/pong": "-",

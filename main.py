@@ -1,6 +1,5 @@
 import time
 
-import machine
 import presto
 from picovector import ANTIALIAS_BEST, PicoVector, Transform
 
@@ -65,6 +64,8 @@ display.set_pen(Color.BLACK)
 display.clear()
 presto.update()
 while True:
+    horloge.affiche()
+    """
     try:
         horloge.affiche()
     except Exception:
@@ -72,4 +73,4 @@ while True:
         display.clear()
         presto.update()
         mqtt.disconnect(False)
-        machine.reset()
+        machine.reset()"""

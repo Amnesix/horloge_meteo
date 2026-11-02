@@ -51,7 +51,7 @@ loggin.log(f"{y}/{m:02d}/{d:02d} {H:02d}:{M:02d}:{S:02d}")
 alerte = Alerte(presto, display, vector, touch, loggin)
 # Initialistion du broker MQTT (lien Home Assistant)
 broker, port = get_api()[1]
-mqtt = MQTT(broker, port, alerte, loggin)
+mqtt = MQTT(presto, broker, port, alerte, loggin)
 # Création des différents objets page
 # mqttlogs = MQTTLog(presto, display, vector, touch, mqtt, alerte)
 calendar = Calendar(presto, display, vector, touch, alerte, loggin)

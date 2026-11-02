@@ -33,6 +33,7 @@ class Horloge:
     meteo = None
     weather = 0
     last_weather = 0
+    connected = True
 
     def __init__(
         self,
@@ -382,14 +383,24 @@ class Horloge:
         lst_bl = self.backlight
         while True:
             now = time.time()
-            if self.mqtt.client is not None and self.mqtt.check_msg():
-                self.first = True
+            if self.connected:
+                if self.mqtt.client is None:
+                    if self.mqtt.connect():
+                        self.first = True
+                else:
+                    if self.mqtt.check_msg():
+                        self.first = True
+                    else:
+                        self.connected = False
             self.gere_touch()
-            if now == self.next_update_time:
+            if now == self.next_update_time or not self.connected:
                 # Éventuellement, reconnexion wifi
-                verifier_connexion(self.presto, self.loggin)
-                # Mise à l'heure via NTP
-                update_time(self.loggin, False)
+                if verifier_connexion(self.presto, self.loggin):
+                    # Mise à l'heure via NTP
+                    update_time(self.loggin, False)
+                    if not self.connected:
+                        self.connected = True
+                        self.first = True
             self.offset = 3600 * TZ.get_offset(now)
             _, month, day, hour, minute, second, wd, _ =\
                 time.gmtime(now + self.offset)

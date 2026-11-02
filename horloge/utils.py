@@ -13,6 +13,7 @@ OZOIR = (48.763827, 2.671739)
 OZOIR_NAME = "ozoir-la-ferriere"
 WEATHER_API = "https://api.weatherapi.com/v1"
 METEO_URL = f"{WEATHER_API}/current.json?key={METEO_KEY}&q={OZOIR_NAME}&aqi=no&lang=fr"
+MAX_TENTATIVES_WIFI = 2 * len(CONFIG)
 
 NTPHOST = (
     "0.fr.pool.ntp.org",
@@ -115,7 +116,7 @@ class Log:
         return 0
 
 
-def wifi_connect(presto, loggin=None):
+def wifi_connect(presto, loggin=None, wait=True):
     global net_config
     try:
         with open("wifi.json", "rt") as f:
@@ -123,7 +124,8 @@ def wifi_connect(presto, loggin=None):
     except OSError:
         d = {"indice": 0}
     indice = d["indice"]
-    while True:
+    boucle = MAX_TENTATIVES_WIFI
+    while boucle > 0:
         if loggin is not None:
             loggin.log(f" * SSID={CONFIG[indice][0]} : ")
         ok = presto.connect(ssid=CONFIG[indice][0], password=CONFIG[indice][1])
@@ -137,19 +139,21 @@ def wifi_connect(presto, loggin=None):
                 loggin.log(f"IP : {presto.wifi.ipv4()}")
             with open("wifi.json", "wt") as f:
                 json.dump(d, f)
-            return
+            return True
         if loggin is not None:
             loggin.log(f" * SSID={CONFIG[indice][0]} : NOK", nl=False)
         indice = (indice + 1) % len(CONFIG)
+        if not wait:
+            boucle -= 1
+    return False
 
 
-def verifier_connexion(presto, loggin):
+def verifier_connexion(presto, loggin, reconnect=True):
     """En cas de perte de connexion, tentative de reconnexion"""
-    if not presto.wifi.isconnected():
+    if not presto.wifi.isconnected() and reconnect:
         loggin.log("Perte de connexion !")
         loggin.log("Tentative de reconnexion...")
-        wifi_connect(presto, loggin)
-        return True
+        return wifi_connect(presto, loggin=loggin, wait=False)
     return False
 
 

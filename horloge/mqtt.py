@@ -18,8 +18,9 @@ TOPIC_MSG = {"ping": "home/ping"}
 class MQTT:
     last_ping = 0
 
-    def __init__(self, broker, port, alerte, loggin):
+    def __init__(self, presto, broker, port, alerte, loggin):
         loggin.log("Initialisation MQTT")
+        self.presto = presto
         self.broker = broker
         self.port = port
         self.alerte = alerte
@@ -58,10 +59,12 @@ class MQTT:
                 s = f"Souscription : {(n + 1) * 100 / t:.0f}%"
                 self.loggin.log(s, nl=False)
                 self.client.subscribe(k)
+            return True
         except OSError as e:
             print(f">> Erreur de connexion : {e}")
             self.loggin.log(f"Erreur MQTT : {e}")
             self.client = None
+        return False
 
     def disconnect(self, autoreco=True):
         self.autoreco = autoreco
@@ -129,6 +132,8 @@ class MQTT:
         return SOUSCRIPTIONS[topic]
 
     def check_msg(self):
+        if not verifier_connexion(self.presto, self.loggin, reconnect=False):
+            return False
         t = time.time()
         if t - self.last_ping >= 300:
             if not self.pong:  # and self.autoreco:

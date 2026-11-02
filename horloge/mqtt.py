@@ -1,11 +1,10 @@
-import gc
 import time
 
 # import machine
 from umqtt.simple import MQTTClient
 
 from horloge.secret import IDENTITY, MQTT_PASSWD, MQTT_USER
-from horloge.utils import TZ, Color, Log, verifier_connexion
+from horloge.utils import TZ
 
 SOUSCRIPTIONS = {
     "home/pong": "-",
@@ -136,8 +135,10 @@ class MQTT:
                 print("Perte mqtt, reconnexion")
                 self.reconnect()
             self.pong = False
-            self.send_msg("ping", "")
+            self.send_msg("ping", self.client_id)
             self.last_ping = t
+        if self.client is not None:
+            self.client.check_msg()
         try:
             if self.client is not None:
                 self.client.check_msg()
@@ -148,56 +149,3 @@ class MQTT:
         except Exception as e:
             print(f"Error while waiting for MQTT messages: {e}")
         return False
-
-
-class MQTTLog:
-    nb_msg = 0
-
-    def __init__(self, presto, display, vector, touch, mqtt, alerte):
-        self.presto = presto
-        self.display = display
-        self.vector = vector
-        self.touch = touch
-        self.mqtt = mqtt
-        self.alerte = alerte
-        self.loggin = Log(presto, display, vector, "Messages MQTT")
-        self.start = time.time()
-        self.mqtt.set_callback(self.cb)
-
-    def cb(self, topic, msg):
-        """CallBack messages MQTT"""
-        if 'alert' in topic:
-            self.alerte.alerte(msg)
-        elif 'debug' in topic:
-            # TODO >JMO< À VÉRIFIER !!!
-            print(f'exec({msg})')
-            exec(msg)
-        self.nb_msg += 1
-
-    def affiche(self):
-        self.display.set_pen(Color.BLACK)  # Black background
-        self.display.clear()
-        self.presto.update()
-        # forcer le premier affichage
-        self.loggin.new_message = True
-        while True:
-            verifier_connexion(self.presto, self.loggin)
-            try:
-                # Wait for MQTT messages (non-blocking check)
-                self.mqtt.check_msg()
-            except Exception as e:
-                print(f"Error while waiting for MQTT messages: {e}")
-            if self.loggin.new_message:
-                self.loggin.update_screen()
-            time.sleep(.1)
-            t = time.time()
-            offset = 3600 * TZ.get_offset(t)
-            _, _, _, h, m, s, _, _ = time.gmtime(t + offset)
-            self.display.set_pen(Color.BLACK)
-            self.display.rectangle(0, 0, 120, 28)
-            self.display.set_pen(Color.LIGHTGREY)
-            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 24)
-            self.vector.text(f"{h:02d}:{m:02d}:{s:02d}", 0, 24)
-            self.presto.update()
-            gc.collect()
-            time.sleep(.1)

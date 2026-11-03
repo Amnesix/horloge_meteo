@@ -13,6 +13,8 @@ SOUSCRIPTIONS = {
 }
 
 TOPIC_MSG = {"ping": "home/ping"}
+DELAI_PING = 300
+DELAI_RECO = 60
 
 
 class MQTT:
@@ -29,11 +31,13 @@ class MQTT:
         self.pile = []
         self.fin_init = False
         self.last_msg = 0
-        self.pong = True
-        self.connect()
+        self.pong = False
+        self.delai = DELAI_PING
+        self.delai = (DELAI_RECO, DELAI_PING)[self.connect()]
+        print(f"delai={self.delai}")
         # Autoreconnexion par défaut
         self.autoreco = True
-        loggin.log("Connexion au broker MQTT OK.")
+        loggin.log("Fin initialisation mqtt.")
 
     def set_fin_init(self):
         self.fin_init = True
@@ -83,7 +87,7 @@ class MQTT:
             except OSError as e:
                 print(f"> Erreur de déconnexion : {e}")
         self.loggin.log("Tentative de reconnexion client MQTT")
-        self.connect()
+        return self.connect()
 
     def send_msg(self, what, msg):
         try:
@@ -135,13 +139,15 @@ class MQTT:
         if not verifier_connexion(self.presto, self.loggin, reconnect=False):
             return False
         t = time.time()
-        if t - self.last_ping >= 300:
+        if t - self.last_ping >= self.delai:
+            self.pong = False
+            self.last_ping = t
             if not self.pong:  # and self.autoreco:
                 print("Perte mqtt, reconnexion")
-                self.reconnect()
-            self.pong = False
+                self.delai = (DELAI_RECO, DELAI_PING)[self.reconnect()]
+                print(f"delai={self.delai}")
+                return True
             self.send_msg("ping", self.client_id)
-            self.last_ping = t
         if self.client is not None:
             self.client.check_msg()
         try:

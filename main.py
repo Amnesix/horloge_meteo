@@ -73,4 +73,6 @@ while True:
         display.clear()
         presto.update()
         mqtt.disconnect(False)
-        machine.reset()"""
+        # Redémarrage
+        machine.reset()
+    """

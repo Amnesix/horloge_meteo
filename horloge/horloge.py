@@ -384,14 +384,14 @@ class Horloge:
         while True:
             now = time.time()
             if self.connected:
-                if self.mqtt.client is None:
+                """if self.mqtt.client is None:
                     if self.mqtt.connect():
                         self.first = True
+                else:"""
+                if self.mqtt.check_msg():
+                    self.first = True
                 else:
-                    if self.mqtt.check_msg():
-                        self.first = True
-                    else:
-                        self.connected = False
+                    self.connected = False
             self.gere_touch()
             if now == self.next_update_time or not self.connected:
                 # Éventuellement, reconnexion wifi

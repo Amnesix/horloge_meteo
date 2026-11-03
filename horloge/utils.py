@@ -58,6 +58,28 @@ def get_api():
     return (api, mqtt)
 
 
+def dateheure():
+    t = time.time()
+    t = time.gmtime(t + TZ.get_offset(t) * 3600)
+    A, M, J, h, m, s, wd, _ = t
+    return ((A, M, J), (h, m, s), wd)
+
+
+def hms():
+    _, (h, m, s), _ = dateheure()
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+
+def date_num():
+    (y, m, d), _, _ = dateheure()
+    return f"{d:02d}/{m:02d}/{y:04d}"
+
+
+def date_str():
+    (y, m, d), _, wd = dateheure()
+    return f"{JOURS[wd]} {d} {MOIS[m]} {y}"
+
+
 class Log:
     screen_update = False
 

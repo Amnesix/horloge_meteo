@@ -423,8 +423,9 @@ class Horloge:
             # print(f"{time.time()}:SE")
             self.aff_SE(now, minute, second)
             # Quadran SO : Calendrier
-            if self.first or self.cfs:  # or self.loggin.screen_update:
+            if self.first or self.cfs or self.calendar.mday != day:  # or self.loggin.screen_update:
                 # print(f"{time.time()}:SO")
+                self.calendar.set_mday(day)
                 self.aff_SO()
                 if self.cfs:
                     self.cfs = False

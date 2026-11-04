@@ -168,6 +168,9 @@ class Calendar:
         self.month = month
         self.calendar = monthly_calendar(self.year, self.month)
 
+    def set_mday(self, day):
+        self.mday = day
+
     def set_pen(self, pen):
         if self.pen != pen:
             self.pen = pen

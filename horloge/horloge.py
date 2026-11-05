@@ -264,7 +264,10 @@ class Horloge:
             log = self.vector.measure_text(text)
             self.vector.text(text, 360 - int(log[2] / 2), 360)
             return
-        forecast = self.meteo['forecast']['forecastday'][0]['hour']
+        try:
+            forecast = self.meteo['forecast']['forecastday'][0]['hour']
+        except KeyError:
+            return
         debut = 0
         while forecast[debut]['time_epoch'] < now:
             debut += 1

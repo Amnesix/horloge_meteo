@@ -269,8 +269,8 @@ class Horloge:
         while forecast[debut]['time_epoch'] < now:
             debut += 1
         x = 248
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 28)
         for _ in '123':
+            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 28)
             self.display.set_pen(self.fg)
             y = 300
             try:
@@ -287,12 +287,32 @@ class Horloge:
                     y += 30
                 except IndexError as e:
                     print(f"Double exception (269) : {e}")
+                except KeyError as e:
+                    print(f"Erreur de clé #1 ({e})")
             try:
                 text = f"{forecast[debut]['temp_c']}°C"
                 # pos = int(self.vector.measure_text(text)[2])
                 self.vector.text(text, x, y)
+                y += 30
             except IndexError:
                 print("Erreur d'index #2")
+            except KeyError as e:
+                print(f"Erreur de clé #2 ({e})")
+            try:
+                text = f"{forecast[debut]['humidity']}%"
+                # log = self.vector.measure_text(text)
+                self.vector.text(text, x, y)
+                y += 30
+            except KeyError as e:
+                print(f"Erreur de clé #3 ({e})")
+            try:
+                self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
+                                     20)
+                text = f"{self.meteo['current']['wind_kph']}km/h"
+                self.vector.text(text, x, y)
+                y += 30
+            except KeyError as e:
+                print(f"Erreur de clé #4 ({e})")
             try:
                 icon = '/'.join(
                     forecast[debut]['condition']['icon'].split('/')[-2:])
@@ -300,7 +320,9 @@ class Horloge:
                 self.png.open_file(icon)
             except IndexError:
                 print("Erreur d'index #3")
-            self.png.decode(x, 350)
+            except KeyError as e:
+                print(f"Erreur de clé #5 ({e})")
+            self.png.decode(x, 400)
             debut += 1
             x += 80
 

@@ -256,6 +256,23 @@ class Horloge:
                 self.vector.text(text, 360 - int(log[2] / 2), 440)
             except KeyError as e:
                 print(f"Double exception (237) : {e}")
+        try:
+            data = self.meteo["forecast"]["forecastday"][0]["astro"]["sunrise"]
+            levé = data.split()[0]
+            data = self.meteo["forecast"]["forecastday"][0]["astro"]["sunset"]
+            ch, cm = data.split()[0].split(':')
+            couché = f"{int(ch) + 12}:{cm}"
+            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 22)
+            # self.tr.rotate(-90, (240, 240))
+            # self.vector.text(levé, 20, 260)
+            # self.vector.text(couché, 20, 460)
+            # self.tr.reset()
+            s = f"Levé {levé} - Couché {couché}"
+            x = 240
+            y = 479
+            self.vector.text(s, x, y)
+        except KeyError:
+            print("ça a merdé")
 
     def aff_hourly_weather(self, now):
         if self.meteo is None:
@@ -418,17 +435,16 @@ class Horloge:
                 else:
                     self.connected = False
             self.gere_touch()
-            if now == self.next_update_time or not self.connected:
-                # Éventuellement, reconnexion wifi
-                if verifier_connexion(self.presto, self.loggin):
-                    # Mise à l'heure via NTP
-                    update_time(self.loggin, False)
-                    if not self.connected:
-                        self.connected = True
-                        self.first = True
+            t1 = now == self.next_update_time or not self.connected
+            if t1 and verifier_connexion(self.presto, self.loggin):
+                # Mise à l'heure via NTP
+                update_time(self.loggin, False)
+                if not self.connected:
+                    self.connected = True
+                    self.first = True
             self.offset = 3600 * TZ.get_offset(now)
-            _, month, day, hour, minute, second, wd, _ =\
-                time.gmtime(now + self.offset)
+            data = time.gmtime(now + self.offset)
+            _, month, day, hour, minute, second, wd, _ = data
             if self.last_second == second:
                 # On ne met à jour l'affichage qu'une fois par seconde
                 time.sleep_ms(10)

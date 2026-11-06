@@ -34,7 +34,6 @@ class MQTT:
         self.pong = False
         self.delai = DELAI_PING
         self.delai = (DELAI_RECO, DELAI_PING)[self.connect()]
-        print(f"delai={self.delai}")
         # Autoreconnexion par défaut
         self.autoreco = True
         loggin.log("Fin initialisation mqtt.")
@@ -145,7 +144,6 @@ class MQTT:
             if not self.pong:  # and self.autoreco:
                 print("Perte mqtt, reconnexion")
                 self.delai = (DELAI_RECO, DELAI_PING)[self.reconnect()]
-                print(f"delai={self.delai}")
                 return True
             self.send_msg("ping", self.client_id)
         if self.client is not None:

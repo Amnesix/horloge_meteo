@@ -233,15 +233,29 @@ class Horloge:
         try:
             text = f"{self.meteo['current']['wind_kph']}km/h {self.meteo['current']['wind_dir']}"
             log = self.vector.measure_text(text)
-            self.vector.text(text, 360 - int(log[2] / 2), y + 75)
+            self.vector.text(text, 360 - int(log[2] / 2), y + 65)
         except KeyError:
             pass
+        try:
+            data = self.meteo["forecast"]["forecastday"][0]["astro"]["sunrise"]
+            levé = data.split()[0]
+            data = self.meteo["forecast"]["forecastday"][0]["astro"]["sunset"]
+            ch, cm = data.split()[0].split(':')
+            couché = f"{int(ch) + 12}:{cm}"
+            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 22)
+            self.display.set_pen(Color.GREY)
+            s = f"Levé {levé} - Couché {couché}"
+            x = 240
+            y = 479
+            self.vector.text(s, x, y)
+        except KeyError:
+            print("ça a merdé")
         try:
             icon = '/'.join(
                 self.meteo['current']['condition']['icon'].split('/')[-2:])
             icon = f"icons/{icon}"
             self.png.open_file(icon)
-            self.png.decode(296, 350, scale=1)
+            self.png.decode(296, 340, scale=1)
         except KeyError:
             pass
         except OSError:
@@ -256,23 +270,6 @@ class Horloge:
                 self.vector.text(text, 360 - int(log[2] / 2), 440)
             except KeyError as e:
                 print(f"Double exception (237) : {e}")
-        try:
-            data = self.meteo["forecast"]["forecastday"][0]["astro"]["sunrise"]
-            levé = data.split()[0]
-            data = self.meteo["forecast"]["forecastday"][0]["astro"]["sunset"]
-            ch, cm = data.split()[0].split(':')
-            couché = f"{int(ch) + 12}:{cm}"
-            self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 22)
-            # self.tr.rotate(-90, (240, 240))
-            # self.vector.text(levé, 20, 260)
-            # self.vector.text(couché, 20, 460)
-            # self.tr.reset()
-            s = f"Levé {levé} - Couché {couché}"
-            x = 240
-            y = 479
-            self.vector.text(s, x, y)
-        except KeyError:
-            print("ça a merdé")
 
     def aff_hourly_weather(self, now):
         if self.meteo is None:

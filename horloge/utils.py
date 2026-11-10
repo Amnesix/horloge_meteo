@@ -303,8 +303,6 @@ def get_forecast(location: str, days: int = 3) -> dict:
 def get_weather():
     """Retourner toutes les informations en un seul appel"""
     return get_forecast(OZOIR_NAME, 3)
-    # rep = requests.get(METEO_URL, timeout=15)
-    # return rep.json()
 
 
 # ======================================================================

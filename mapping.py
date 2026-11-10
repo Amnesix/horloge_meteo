@@ -26,6 +26,7 @@ WMO = {
     86: "snow_showers",  # averses de neige fortes
     95: "thunderstorm",  # orage
     96: "thunderstorm",  # orage avec grêle faible
+    97: "thunderstorm",  # Fort orage avec grêle
     99: "thunderstorm",  # orage avec grêle forte
 }
 

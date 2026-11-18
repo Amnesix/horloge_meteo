@@ -433,7 +433,8 @@ class Horloge:
                     self.connected = False
             self.gere_touch()
             t1 = now == self.next_update_time or not self.connected
-            if t1 and verifier_connexion(self.presto, self.loggin):
+            if t1 and verifier_connexion(
+                    self.presto, self.loggin, reconnect=False):
                 # Mise à l'heure via NTP
                 update_time(self.loggin, False)
                 if not self.connected:

@@ -44,7 +44,7 @@ TZ.init(loggin)
 s = time.time()
 start = time.time()
 offset = 3600 * TZ.get_offset(s)
-y, m, d, H, M, S, _, _ = time.gmtime(s + offset)
+y, m, d, H, M, S, _, *_ = time.gmtime(s + offset)
 loggin.log(f"{y}/{m:02d}/{d:02d} {H:02d}:{M:02d}:{S:02d}")
 # Initialisation affichage message d'alerte
 alerte = Alerte(presto, display, vector, touch, loggin)

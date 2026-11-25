@@ -13,6 +13,7 @@ from horloge.utils import (
     Color,
     get_touch,
     get_weather,
+    hms,
     update_time,
     verifier_connexion,
 )
@@ -30,7 +31,7 @@ class Horloge:
     force_backlight = None
     hfs = cfs = mfs = False
     last_NE = None
-    meteo = None
+    meteo = {}
     weather = 0
     last_weather = 0
     connected = True
@@ -71,7 +72,8 @@ class Horloge:
         self.jpg = jpegdec.JPEG(self.display)
 
         self.mqtt.set_callback(self.mqtt_cb)
-        self.next_update_time = time.time() + 12 * 60 * 60
+        self.lst_con = time.time()
+        self.next_update_time = self.lst_con + 12 * 60 * 60
 
         self.hub = Polygon()
         self.hub.circle(int(WIDTH / 4), int(HEIGHT / 4), 5)
@@ -249,7 +251,7 @@ class Horloge:
             y = 479
             self.vector.text(s, x, y)
         except KeyError:
-            print("ça a merdé")
+            print(f"ça a merdé (len({self.meteo}))")
         try:
             icon = '/'.join(
                 self.meteo['current']['condition']['icon'].split('/')[-2:])
@@ -381,8 +383,14 @@ class Horloge:
         fct = (self.aff_current_weather, self.aff_hourly_weather,
                self.aff_daily_weather)
         if now - self.last_weather >= 300:
-            self.meteo = get_weather()
-            self.last_weather = now
+            meteo = get_weather()
+            if meteo is None:
+                self.last_weather += 120  # On redemande dans 2mn
+                print(f"{hms()}:On redemande dans 2mn")
+            else:
+                self.meteo = meteo
+                self.last_weather = now
+                print(f"{hms()}:Météo OK")
         self.display.set_pen(Color.BLACK)
         self.display.rectangle(240, 240, 240, 240)
         self.display.set_pen(self.fg)
@@ -433,8 +441,10 @@ class Horloge:
                     self.connected = False
             self.gere_touch()
             t1 = now == self.next_update_time or not self.connected
-            if t1 and verifier_connexion(
-                    self.presto, self.loggin, reconnect=False):
+            t2 = verifier_connexion(self.presto,
+                                    self.loggin,
+                                    reconnect=(now - self.lst_con) > 60)
+            if t1 and t2:
                 # Mise à l'heure via NTP
                 update_time(self.loggin, False)
                 if not self.connected:
@@ -442,7 +452,7 @@ class Horloge:
                     self.first = True
             self.offset = 3600 * TZ.get_offset(now)
             data = time.gmtime(now + self.offset)
-            _, month, day, hour, minute, second, wd, _ = data
+            _, month, day, hour, minute, second, wd, *_ = data
             if self.last_second == second:
                 # On ne met à jour l'affichage qu'une fois par seconde
                 time.sleep_ms(10)

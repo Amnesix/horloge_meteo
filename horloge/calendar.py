@@ -146,7 +146,7 @@ class Calendar:
 
     def init_calendar(self, s):
         self.offset = 3600 * TZ.get_offset(s)
-        self.ny, self.nm, d, _, _, _, _, _ = time.gmtime(s + self.offset)
+        self.ny, self.nm, d, _, _, _, _, *_ = time.gmtime(s + self.offset)
         if self.year == self.ny and self.month == self.nm:
             return
         self.year = self.ny

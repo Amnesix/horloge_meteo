@@ -112,7 +112,7 @@ class MQTT:
         msg = msg.decode('utf-8')
         self.last_msg = time.time()
         data = time.gmtime(self.last_msg + 3600 * TZ.get_offset(self.last_msg))
-        _, _, _, h, m, s, _, _ = data
+        _, _, _, h, m, s, _, *_ = data
         if 'pong' in topic:
             self.pong = True
             print(f"{h:02d}:{m:02d}:{s:02d}:Reception MQTT {topic} : {msg}")

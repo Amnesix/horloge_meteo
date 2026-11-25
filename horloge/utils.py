@@ -61,7 +61,7 @@ def get_api():
 def dateheure():
     t = time.time()
     t = time.gmtime(t + TZ.get_offset(t) * 3600)
-    A, M, J, h, m, s, wd, _ = t
+    A, M, J, h, m, s, wd, *_ = t
     return ((A, M, J), (h, m, s), wd)
 
 
@@ -220,12 +220,12 @@ class TZ:
             return
         if year is None:
             s = time.time()
-            year, _, _, _, _, _, _, _ = time.gmtime(s)
+            year, _, _, _, _, _, _, *_ = time.gmtime(s)
         # print(f"Init TZ for year {year}")
         cls.start = cls.dst_start(year)
         cls.end = cls.dst_end(year)
-        _, ms, js, _, _, _, _, _ = time.gmtime(cls.start)
-        _, me, je, _, _, _, _, _ = time.gmtime(cls.end)
+        _, ms, js, _, _, _, _, *_ = time.gmtime(cls.start)
+        _, me, je, _, _, _, _, *_ = time.gmtime(cls.end)
         loggin.log(
             f"{year} : heure été du {js} {MOIS[ms - 1]} au {je} {MOIS[me - 1]}"
         )
@@ -295,7 +295,7 @@ def get_forecast(location: str, days: int = 3) -> dict:
         response = requests.get(
             f"{WEATHER_API}/forecast.json?{'&'.join(params)}", timeout=15)
     except OSError:
-        return {}
+        return None
 
     return response.json()
 

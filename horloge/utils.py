@@ -82,15 +82,19 @@ def date_str():
 
 class Log:
     screen_update = False
+    screen = 0
 
-    def __init__(self, presto, display, vector, title):
+    def __init__(self, presto, display, vector, title, screen=0):
+        self.screen = screen
         self.presto = presto
         self.display = display
         self.vector = vector
         self.title = title
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 32)
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
+                             32 if self.screen == 0 else 16)
         len = self.vector.measure_text(self.title)
-        self.title_coord = (int(480 - len[2]) // 2, 25)
+        w = 480 if self.screen == 0 else 240
+        self.title_coord = (int(w - len[2]) // 2, 25)
         self.ligne = 0
         self.msg = []
         self.new_message = True
@@ -98,7 +102,8 @@ class Log:
     def set_title(self, title):
         self.title = title
 
-    def log(self, msg, color=None, nl=True, aff=True):
+    def log(self, msg, color=None, nl=True, aff=True, screen=0):
+        self.screen = screen
         if color is None:
             color = Color.LIGHTGREY
         if nl:
@@ -114,17 +119,23 @@ class Log:
 
     def update_screen(self):
         self.display.set_pen(Color.BLACK)
+        x, y, w, h = (0, 0, 480, 480) if self.screen == 0 else (0, 240, 240,
+                                                                240)
         self.display.clear()
         self.display.set_pen(Color.LIGHTGREY)
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 32)
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
+                             32 if self.screen == 0 else 16)
         self.vector.text(self.title, *self.title_coord)
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af", 25)
+        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
+                             25 if self.screen == 0 else 12)
+        hl = 25 if self.screen == 0 else 12
+        xoffset, yoffset = (0, 0) if self.screen == 0 else (0, 240)
         for index, data in enumerate(self.msg[-NB_MAX_DISPLAY::]):
             try:
                 self.display.set_pen(data[2])
             except IndexError:
                 print(data)
-            self.vector.text(data[1], 0, (index + 2) * 25)
+            self.vector.text(data[1], 0 + xoffset, (index + 2) * hl + yoffset)
         self.presto.update()
         self.new_message = False
         self.screen_update = True
@@ -140,6 +151,7 @@ class Log:
 
 def wifi_connect(presto, loggin=None, wait=True):
     global net_config
+    screen = 0 if wait else 3
     try:
         with open("wifi.json", "rt") as f:
             d = json.load(f)
@@ -149,21 +161,25 @@ def wifi_connect(presto, loggin=None, wait=True):
     boucle = MAX_TENTATIVES_WIFI
     while boucle > 0:
         if loggin is not None:
-            loggin.log(f" * SSID={CONFIG[indice][0]} : ")
+            loggin.log(f" * SSID={CONFIG[indice][0]} : ", screen=screen)
         ok = presto.connect(ssid=CONFIG[indice][0], password=CONFIG[indice][1])
         if ok:
             if loggin is not None:
-                loggin.log(f" * SSID={CONFIG[indice][0]} : OK", nl=False)
+                loggin.log(f" * SSID={CONFIG[indice][0]} : OK",
+                           nl=False,
+                           screen=screen)
             net_config = indice
             set_api(indice)
             d["indice"] = indice
             if loggin is not None:
-                loggin.log(f"IP : {presto.wifi.ipv4()}")
+                loggin.log(f"IP : {presto.wifi.ipv4()}", screen=screen)
             with open("wifi.json", "wt") as f:
                 json.dump(d, f)
             return True
         if loggin is not None:
-            loggin.log(f" * SSID={CONFIG[indice][0]} : NOK", nl=False)
+            loggin.log(f" * SSID={CONFIG[indice][0]} : NOK",
+                       nl=False,
+                       screen=screen)
         indice = (indice + 1) % len(CONFIG)
         if not wait:
             boucle -= 1
@@ -173,8 +189,8 @@ def wifi_connect(presto, loggin=None, wait=True):
 def verifier_connexion(presto, loggin, reconnect=True):
     """En cas de perte de connexion, tentative de reconnexion"""
     if not presto.wifi.isconnected() and reconnect:
-        loggin.log("Perte de connexion !")
-        loggin.log("Tentative de reconnexion...")
+        loggin.log("Perte de connexion !", screen=3)
+        loggin.log("Tentative de reconnexion...", screen=3)
         return wifi_connect(presto, loggin=loggin, wait=False)
     return False
 
@@ -270,7 +286,7 @@ class WeatherAPIError(Exception):
         super().__init__(f"WeatherAPI error {code}: {message}")
 
 
-def get_forecast(location: str, days: int = 3) -> dict:
+def get_forecast(location: str, days: int = 3) -> dict | None:
     """
     Get weather forecast for a location.
 

@@ -385,7 +385,8 @@ class Horloge:
         if now - self.last_weather >= 300:
             meteo = get_weather()
             if meteo is None:
-                self.last_weather += 120  # On redemande dans 2mn
+                self.last_weather = now
+                meteo = {}
                 print(f"{hms()}:On redemande dans 2mn")
             else:
                 self.meteo = meteo
@@ -443,7 +444,7 @@ class Horloge:
             t1 = now == self.next_update_time or not self.connected
             t2 = verifier_connexion(self.presto,
                                     self.loggin,
-                                    reconnect=(now - self.lst_con) > 60)
+                                    reconnect=(now - self.lst_con) > 120)
             if t1 and t2:
                 # Mise à l'heure via NTP
                 update_time(self.loggin, False)

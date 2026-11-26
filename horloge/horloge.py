@@ -115,7 +115,7 @@ class Horloge:
         try:
             self.sensor = VEML7700(self.i2c)
         except OSError as e:
-            self.loggin.log(e)
+            self.loggin.log(str(e))
             print(e)
             self.sensor = None
 

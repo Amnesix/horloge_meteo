@@ -90,11 +90,6 @@ class Log:
         self.display = display
         self.vector = vector
         self.title = title
-        self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
-                             32 if self.screen == 0 else 16)
-        len = self.vector.measure_text(self.title)
-        w = 480 if self.screen == 0 else 240
-        self.title_coord = (int(w - len[2]) // 2, 25)
         self.ligne = 0
         self.msg = []
         self.new_message = True
@@ -119,17 +114,22 @@ class Log:
 
     def update_screen(self):
         self.display.set_pen(Color.BLACK)
-        x, y, w, h = (0, 0, 480, 480) if self.screen == 0 else (0, 240, 240,
-                                                                240)
-        self.display.clear()
+        xoffset, yoffset = (0, 0) if self.screen == 0 else (0, 240)
+        x, y, w, h = (0, 0, 480,
+                      480) if self.screen == 0 else (xoffset, yoffset, 240,
+                                                     240)
+        self.display.rectangle(x, y, w, h)
         self.display.set_pen(Color.LIGHTGREY)
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
                              32 if self.screen == 0 else 16)
-        self.vector.text(self.title, *self.title_coord)
+        ln = self.vector.measure_text(self.title)
+        w = 480 if self.screen == 0 else 240
+        self.vector.text(self.title,
+                         int(w - ln[2]) // 2 + xoffset,
+                         yoffset + (25 if self.screen == 0 else 12))
         self.vector.set_font("Roboto-Medium-With-Material-Symbols.af",
                              25 if self.screen == 0 else 12)
         hl = 25 if self.screen == 0 else 12
-        xoffset, yoffset = (0, 0) if self.screen == 0 else (0, 240)
         for index, data in enumerate(self.msg[-NB_MAX_DISPLAY::]):
             try:
                 self.display.set_pen(data[2])

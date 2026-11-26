@@ -3,6 +3,7 @@ import sys
 import time
 
 import jpegdec
+from machine import I2C
 from picovector import Polygon
 from pngdec import PNG
 
@@ -10,6 +11,7 @@ from horloge.utils import (
     JOURS,
     MOIS,
     TZ,
+    VEML7700,
     Color,
     get_touch,
     get_weather,
@@ -108,6 +110,14 @@ class Horloge:
             (1, int(HEIGHT / 16)),
             (1, -self.second_hand_length),
         )
+
+        self.i2c = I2C()
+        try:
+            self.sensor = VEML7700(self.i2c)
+        except OSError as e:
+            self.loggin.log(e)
+            print(e)
+            self.sensor = None
 
         self.display.set_pen(Color.BLACK)
         self.display.clear()
@@ -404,24 +414,40 @@ class Horloge:
 
     def gere_backlight(self, hour, minute, second):
         if self.force_backlight is None:
-            # Gestion luminosité. Plus tard, utilisation d'un capteur de lumière...
-            if hour == minute == second == 0:
-                self.first = True  # Réafficher le calendrier
-            if hour == 21:
-                if minute < 15:
-                    self.backlight = .5
-                elif minute < 30:
-                    self.backlight = .4
-                elif minute < 45:
-                    self.backlight = .3
+            if self.sensor is None:
+                # Gestion luminosité. Plus tard, utilisation d'un capteur de lumière...
+                if hour == minute == second == 0:
+                    self.first = True  # Réafficher le calendrier
+                if hour == 21:
+                    if minute < 15:
+                        self.backlight = .5
+                    elif minute < 30:
+                        self.backlight = .4
+                    elif minute < 45:
+                        self.backlight = .3
+                    else:
+                        self.backlight = .2
+                elif hour == 5 or hour == 22:
+                    self.backlight = .1
+                elif 23 == hour or hour < 5:
+                    self.backlight = .01
                 else:
-                    self.backlight = .2
-            elif hour == 5 or hour == 22:
-                self.backlight = .1
-            elif 23 == hour or hour < 5:
-                self.backlight = .01
+                    self.backlight = 1
             else:
-                self.backlight = 1
+                lux = self.sensor.lux
+                print(lux)
+                if lux < 1:
+                    self.backlight = .01
+                elif lux < 5:
+                    self.backlight = .1
+                elif lux < 10:
+                    self.backlight = .3
+                elif lux < 15:
+                    self.backlight = .5
+                elif lux < 20:
+                    self.backlight = .8
+                else:
+                    self.backlight = 1
         else:
             self.backlight = self.force_backlight
 

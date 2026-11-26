@@ -494,3 +494,37 @@ class Update_App:
 
     def __init__(self, presto):
         self.presto = presto
+
+
+class VEML7700:
+
+    def __init__(self, i2c, address=0x10):
+        self.i2c = i2c
+        self.address = address
+
+        # Vérification de présence
+        if address not in self.i2c.scan():
+            raise OSError("VEML7700 non détecté")
+
+        # Configuration ALS
+        self.write_register(0x00, 0x1000)
+
+        time.sleep_ms(100)
+
+    def write_register(self, register, value):
+        data = bytes((value & 0xFF, (value >> 8) & 0xFF))
+
+        self.i2c.writeto_mem(self.address, register, data, addrsize=8)
+
+    def read_register(self, register):
+        data = self.i2c.readfrom_mem(self.address, register, 2, addrsize=8)
+
+        return data[0] | (data[1] << 8)
+
+    @property
+    def light(self):
+        return self.read_register(0x04)
+
+    @property
+    def lux(self):
+        return self.light * 0.0576

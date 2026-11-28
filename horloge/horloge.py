@@ -114,10 +114,13 @@ class Horloge:
         self.i2c = I2C()
         try:
             self.sensor = VEML7700(self.i2c)
+            self.lux = self.sensor.lux
         except OSError as e:
             self.loggin.log(str(e))
             print(e)
             self.sensor = None
+            self.lux = None
+        self.lux_min = self.lux_max = self.lux
 
         self.display.set_pen(Color.BLACK)
         self.display.clear()
@@ -185,8 +188,8 @@ class Horloge:
 
     def aff_NE(self, month, day, wd, hour, minute):
         # start = time.time_ns()
-        if self.last_NE == (month, day, wd, hour, minute) and not self.first:
-            return
+        # if self.last_NE == (month, day, wd, hour, minute) and not self.first:
+        #     return
         self.last_NE = (month, day, wd, hour, minute)
         self.display.set_pen(Color.BLACK)
         self.display.rectangle(240, 0, 240, 240)
@@ -208,7 +211,14 @@ class Horloge:
         self.vector.set_font("Roboto-Medium.af", 72)
         heure = f"{hour}:{minute:02d}"
         dim = self.vector.measure_text(heure)
-        self.vector.text(heure, 360 - int(dim[2] // 2), 220)
+        self.vector.text(heure, 360 - int(dim[2] // 2), 210)
+        self.vector.set_font("Roboto-Medium.af", 22)
+        if self.lux is None:
+            txt = "VEML7700 absent"
+        else:
+            txt = f"{self.lux_min:.01f} < {self.lux:.01f} lux < {self.lux_max:0.1f}"
+        dim = self.vector.measure_text(txt)
+        self.vector.text(txt, 360 - int(dim[2] // 2), 240)
         self.presto.partial_update(240, 0, 240, 240)
         # print(f"Aff NE : {(time.time_ns() - start) // 10**6}ms")
 
@@ -434,20 +444,15 @@ class Horloge:
                 else:
                     self.backlight = 1
             else:
-                lux = self.sensor.lux
-                print(lux)
-                if lux < 1:
+                self.lux = self.sensor.lux
+                if self.lux < self.lux_min:
+                    self.lux_min = self.lux
+                elif self.lux > self.lux_max:
+                    self.lux_max = self.lux
+                if self.lux < 1:
                     self.backlight = .01
-                elif lux < 5:
-                    self.backlight = .1
-                elif lux < 10:
-                    self.backlight = .3
-                elif lux < 15:
-                    self.backlight = .5
-                elif lux < 20:
-                    self.backlight = .8
                 else:
-                    self.backlight = 1
+                    self.backlight = min(self.lux / 10, 1)
         else:
             self.backlight = self.force_backlight
 
